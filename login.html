@@ -6,6 +6,7 @@
     <title>Login - KAITRUX</title>
     <link rel="icon" href="kaitrux.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="auth.js"></script>
     <style>
         body { background: linear-gradient(to bottom, #1e3a8a, #1e40af); }
         .discord-btn {
@@ -24,15 +25,15 @@
                 <img src="kaitrux.png" alt="Kaitrux" class="w-8 h-8 object-contain">
                 <a href="index.html" class="text-3xl font-bold hover:text-blue-300">Kaitrux</a>
             </div>
-            <nav>
-                <ul class="flex space-x-6">
-                    <li><a href="index.html" class="hover:text-blue-300">Inicio</a></li>
-                    <li><a href="comandos.html" class="hover:text-blue-300">Comandos</a></li>
-                    <li><a href="#" class="hover:text-blue-300">Contacto</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+                       <nav>␊
+                <ul class="flex space-x-6">␊
+                    <li><a href="index.html" class="hover:text-blue-300">Inicio</a></li>␊
+                    <li><a href="comandos.html" class="hover:text-blue-300">Comandos</a></li>␊
+                    <li><a href="servers.html" class="hover:text-blue-300">Servidores</a></li>
+                </ul>␊
+            </nav>␊
+        </div>␊
+    </header>␊
 
     <main class="h-screen flex flex-col items-center justify-center px-4">
         <div class="bg-blue-800 bg-opacity-50 p-8 rounded-lg shadow-xl max-w-md w-full">
@@ -42,23 +43,24 @@
                 <p class="text-blue-200 mt-2">Inicia sesión con tu cuenta de Discord para administrar Kaitrux en tus servidores</p>
             </div>
             
-            <div class="text-center">
-                <a href="/api/auth/discord" class="discord-btn flex items-center justify-center gap-2 py-3 px-6 rounded-md w-full font-medium text-lg">
-                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037a13.861 13.861 0 0 0-.613 1.26a18.27 18.27 0 0 0-5.487 0a13.087 13.087 0 0 0-.626-1.26a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.127a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107a13.94 13.94 0 0 0 1.226 1.993a.076.076 0 0 0 .084.028a19.834 19.834 0 0 0 6-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                    </svg>
-                    Iniciar sesión con Discord
-                </a>
-            </div>
+           <div class="text-center">␊
+                <button type="button" id="login-btn" class="discord-btn flex items-center justify-center gap-2 py-3 px-6 rounded-md w-full font-medium text-lg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">␊
+                        <path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037a13.861 13.861 0 0 0-.613 1.26a18.27 18.27 0 0 0-5.487 0a13.087 13.087 0 0 0-.626-1.26a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.127a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107a13.94 13.94 0 0 0 1.226 1.993a.076.076 0 0 0 .084.028a19.834 19.834 0 0 0 6-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>␊
+                    </svg>␊
+                    Iniciar sesión con Discord␊
+                </button>
+            </div>␊
 
-            <div class="mt-6 text-center text-sm text-blue-200">
-                <p>Al iniciar sesión, aceptas nuestros <a href="#" class="underline hover:text-white">Términos de servicio</a> y <a href="#" class="underline hover:text-white">Política de privacidad</a></p>
-            </div>
-        </div>
-    </main>
+            <div class="mt-6 text-center text-sm text-blue-200">␊
+                <p>Al iniciar sesión, aceptas nuestros <a href="kaitruxToS.pdf" class="underline hover:text-white">Términos de servicio</a> y <a href="kaitrux.pdf" class="underline hover:text-white">Política de privacidad</a></p>
+            </div>␊
+        </div>␊
+    </main>␊
     
     <footer class="py-6 text-center bg-blue-800 bg-opacity-90 fixed bottom-0 w-full">
         <p>&copy; 2025 Kaitrux. Todos los derechos reservados.</p>
     </footer>
 </body>
 </html>
+
