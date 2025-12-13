@@ -1,71 +1,56 @@
 // Configuración de OAuth2 Discord
+// NO expongas client_secret en el frontend; utiliza el flujo implícito.
 const CLIENT_ID = "1352110749169750038"; // Reemplaza con tu Client ID
-const CLIENT_SECRET = "KqcBar4uoh1HoU1vf5ygjoOgDkUicvJx"; // Reemplaza con tu Client Secret
-const REDIRECT_URI = "https://k1ontop.github.io/kaitruxweb/servers.html"; // Reemplaza con tu URL de callback
+const BASE_PATH = window.location.pathname.replace(/\/[^/]*$/, '/');
+const REDIRECT_URI = `${window.location.origin}${BASE_PATH}servers.html`; // URL de callback
 const DISCORD_API = "https://discord.com/api";
+const OAUTH_SCOPE = "identify guilds";
 
 // Funciones para manejar la autenticación
 function login() {
-    const scope = "identify guilds";
-    const authUrl = `${DISCORD_API}/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${scope}`;
+    const authUrl = `${DISCORD_API}/oauth2/authorize` +
+        `?client_id=${CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+        `&response_type=token` +
+        `&scope=${encodeURIComponent(OAUTH_SCOPE)}` +
+        `&prompt=consent`;
     window.location.href = authUrl;
 }
 
 // Función para manejar el callback después de autenticación
-async function handleCallback() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-        try {
-            // Intercambiar código por token
-            const tokenResponse = await fetch(`${DISCORD_API}/oauth2/token`, {
-                method: 'POST',
-                body: new URLSearchParams({
-                    client_id: CLIENT_ID,
-                    client_secret: CLIENT_SECRET,
-                    grant_type: 'authorization_code',
-                    code: code,
-                    redirect_uri: REDIRECT_URI
-                }),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-            
-            const tokenData = await tokenResponse.json();
-            if (tokenData.access_token) {
-                localStorage.setItem('discord_token', tokenData.access_token);
-                localStorage.setItem('discord_refresh_token', tokenData.refresh_token);
-                localStorage.setItem('discord_token_expiry', Date.now() + (tokenData.expires_in * 1000));
-                
-                // Obtener información del usuario
-                await fetchUserInfo();
-                
-                // Obtener servidores del usuario
-                await fetchUserGuilds();
-                
-                // Redirigir a la página de servidores
-                window.location.href = '/servers.html';
-            }
-        } catch (error) {
-            console.error('Error durante la autenticación:', error);
-        }
+function handleCallback() {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+
+    if (!accessToken) {
+        return false;
     }
+
+    const expiresIn = Number(hashParams.get('expires_in')) || 0;
+
+    localStorage.setItem('discord_token', accessToken);
+    localStorage.setItem('discord_token_expiry', Date.now() + (expiresIn * 1000));
+
+    // Limpiar el fragmento de la URL para evitar que se procese de nuevo
+    window.history.replaceState(null, '', window.location.pathname);
+
+    fetchUserInfo();
+    fetchUserGuilds();
+    return true;
 }
 
 // Obtener información del usuario de Discord
 async function fetchUserInfo() {
     const token = localStorage.getItem('discord_token');
     if (!token) return;
-    
+
     try {
         const response = await fetch(`${DISCORD_API}/users/@me`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        
+
         const userData = await response.json();
         localStorage.setItem('discord_user', JSON.stringify(userData));
         updateUIWithUserInfo(userData);
@@ -78,20 +63,20 @@ async function fetchUserInfo() {
 async function fetchUserGuilds() {
     const token = localStorage.getItem('discord_token');
     if (!token) return;
-    
+
     try {
         const guildsResponse = await fetch(`${DISCORD_API}/users/@me/guilds`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        
+
         const guildsData = await guildsResponse.json();
         localStorage.setItem('discord_guilds', JSON.stringify(guildsData));
-        
+
         // Obtener servidores donde está el bot (esto requeriría una API backend)
         const botGuilds = await fetchBotGuilds();
-        
+
         // Dividir servidores en dos grupos
         categorizeAndDisplayGuilds(guildsData, botGuilds);
     } catch (error) {
@@ -113,18 +98,18 @@ async function fetchBotGuilds() {
 function categorizeAndDisplayGuilds(userGuilds, botGuilds) {
     const guildsWithBot = [];
     const guildsWithoutBot = [];
-    
+
     userGuilds.forEach(guild => {
         // Verificar si el usuario tiene permiso para administrar el servidor
         const canManageGuild = (guild.permissions & 0x20) === 0x20; // Permiso MANAGE_GUILD
-        
+
         if (botGuilds.includes(guild.id)) {
             guildsWithBot.push(guild);
         } else if (canManageGuild) {
             guildsWithoutBot.push(guild);
         }
     });
-    
+
     displayGuildsInContainer(guildsWithBot, 'guilds-with-bot');
     displayGuildsInContainer(guildsWithoutBot, 'guilds-without-bot');
 }
@@ -133,24 +118,24 @@ function categorizeAndDisplayGuilds(userGuilds, botGuilds) {
 function displayGuildsInContainer(guilds, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     if (guilds.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-400">No hay servidores disponibles</p>';
         return;
     }
-    
+
     guilds.forEach(guild => {
         const guildElement = document.createElement('div');
         guildElement.className = 'guild-item bg-blue-700 rounded-lg p-4 hover:bg-blue-600 cursor-pointer';
-        
+
         // Determinar icono del servidor
         let iconUrl = 'default-server-icon.png'; // Imagen predeterminada
         if (guild.icon) {
             iconUrl = `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`;
         }
-        
+
         guildElement.innerHTML = `
             <div class="flex items-center">
                 <img src="${iconUrl}" alt="${guild.name}" class="w-12 h-12 rounded-full mr-4">
@@ -160,11 +145,11 @@ function displayGuildsInContainer(guilds, containerId) {
                 </div>
             </div>
         `;
-        
+
         guildElement.addEventListener('click', () => {
             window.location.href = `/servers/${guild.id}/dashboard`;
         });
-        
+
         container.appendChild(guildElement);
     });
 }
@@ -173,12 +158,12 @@ function displayGuildsInContainer(guilds, containerId) {
 function updateUIWithUserInfo(user) {
     const userInfoElement = document.getElementById('user-info');
     if (!userInfoElement) return;
-    
+
     let avatarUrl = 'default-avatar.png'; // Imagen predeterminada
     if (user.avatar) {
         avatarUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
     }
-    
+
     userInfoElement.innerHTML = `
         <div class="flex items-center">
             <img src="${avatarUrl}" alt="${user.username}" class="w-10 h-10 rounded-full mr-2">
@@ -191,7 +176,7 @@ function updateUIWithUserInfo(user) {
             </button>
         </div>
     `;
-    
+
     // Añadir evento para cerrar sesión
     document.getElementById('logout-btn')?.addEventListener('click', logout);
 }
@@ -200,7 +185,7 @@ function updateUIWithUserInfo(user) {
 function checkAuth() {
     const token = localStorage.getItem('discord_token');
     const expiry = localStorage.getItem('discord_token_expiry');
-    
+
     if (!token || !expiry || Date.now() > parseInt(expiry)) {
         // Token expirado o no existe
         document.querySelectorAll('.auth-required').forEach(el => {
@@ -211,7 +196,7 @@ function checkAuth() {
         });
         return false;
     }
-    
+
     // Usuario autenticado
     document.querySelectorAll('.auth-required').forEach(el => {
         el.style.display = 'block';
@@ -219,7 +204,7 @@ function checkAuth() {
     document.querySelectorAll('.auth-not-required').forEach(el => {
         el.style.display = 'none';
     });
-    
+
     // Cargar información del usuario almacenada
     const userData = JSON.parse(localStorage.getItem('discord_user') || '{}');
     if (userData.id) {
@@ -227,43 +212,39 @@ function checkAuth() {
     } else {
         fetchUserInfo();
     }
-    
+
     return true;
 }
 
 // Cerrar sesión
 function logout() {
     localStorage.removeItem('discord_token');
-    localStorage.removeItem('discord_refresh_token');
     localStorage.removeItem('discord_token_expiry');
     localStorage.removeItem('discord_user');
     localStorage.removeItem('discord_guilds');
-    
-    window.location.href = '/';
+
+    window.location.href = `${window.location.origin}${BASE_PATH}index.html`;
 }
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
-    // Verificar si estamos en la página de callback
-    if (window.location.pathname === '/callback') {
-        handleCallback();
-        return;
-    }
-    
+    const handledCallback = handleCallback();
+
     // Comprobar estado de autenticación
-    const isAuthenticated = checkAuth();
-    
+    const isAuthenticated = handledCallback || checkAuth();
+
     // Añadir evento al botón de login
     const loginBtn = document.getElementById('login-btn');
     if (loginBtn) {
         loginBtn.addEventListener('click', login);
     }
-    
+
     // Si estamos en la página de servidores y el usuario está autenticado
-    if (window.location.pathname === '/servers.html' && isAuthenticated) {
+    const isServersPage = window.location.pathname.endsWith('/servers.html') || window.location.pathname === '/servers.html';
+    if (isServersPage && isAuthenticated) {
         const guildsData = JSON.parse(localStorage.getItem('discord_guilds') || '[]');
         const botGuilds = JSON.parse(localStorage.getItem('bot_guilds') || '[]');
-        
+
         if (guildsData.length > 0) {
             categorizeAndDisplayGuilds(guildsData, botGuilds);
         } else {
