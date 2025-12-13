@@ -1,7 +1,27 @@
 // Configuración de OAuth2 Discord
 // NO expongas client_secret en el frontend; utiliza el flujo implícito.
 const CLIENT_ID = "1352110749169750038"; // Reemplaza con tu Client ID
-const BASE_PATH = window.location.pathname.replace(/\/[^/]*$/, '/');
+
+// Asegura que mantenemos el prefijo de carpeta incluso si el usuario accede sin la barra final
+// (por ejemplo, https://k1ontop.github.io/kaitruxweb en vez de https://k1ontop.github.io/kaitruxweb/).
+const BASE_PATH = (() => {
+    const { pathname } = window.location;
+
+    // Si ya termina en '/', no tocar
+    if (pathname.endsWith('/')) {
+        return pathname;
+    }
+
+    // Si la última parte parece un archivo, quitamos solo ese segmento
+    if (pathname.split('/').pop().includes('.')) {
+        const dir = pathname.replace(/\/[^/]*$/, '');
+        return dir.endsWith('/') ? dir : `${dir}/`;
+    }
+
+    // Si es una ruta de carpeta sin la barra final, la añadimos
+    return `${pathname}/`;
+})();
+
 const REDIRECT_URI = `${window.location.origin}${BASE_PATH}servers.html`; // URL de callback
 const DISCORD_API = "https://discord.com/api";
 const OAUTH_SCOPE = "identify guilds";
