@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kaitrux — Bot de Discord</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080810;
+      --surface:  #0f0f1a;
+      --border:   rgba(255,255,255,0.07);
+      --accent:   #5865F2;
+      --accent2:  #eb459e;
+      --text:     #e8e8f0;
+      --muted:    #6b6b8a;
+      --glow:     rgba(88,101,242,0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NOISE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* GLOW BG */
+    .bg-glow {
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-glow-1 { background: rgba(88,101,242,0.15); top: -200px; left: -200px; }
+    .bg-glow-2 { background: rgba(235,69,158,0.10); bottom: -200px; right: -200px; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(8,8,16,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 20px var(--glow);
+    }
+    .btn-primary:hover {
+      background: #4752c4;
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px var(--glow);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 1rem;
+      border-radius: 100px;
+      border: 1px solid rgba(88,101,242,0.3);
+      background: rgba(88,101,242,0.08);
+      font-size: 0.8rem;
+      color: #a5acff;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: #5865F2; animation: pulse 2s infinite; }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    /* STATS */
+    .stats {
+      position: relative; z-index: 1;
+      display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
+      padding: 4rem 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      text-align: center;
+      min-width: 160px;
+      transition: border-color 0.3s, transform 0.3s;
+      animation: fadeUp 0.6s ease both;
+    }
+    .stat-card:hover {
+      border-color: rgba(88,101,242,0.4);
+      transform: translateY(-4px);
+    }
+
+    .stat-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* FEATURES */
+    .features {
+      position: relative; z-index: 1;
+      padding: 4rem 2rem 6rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 3rem;
+      letter-spacing: -1px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem;
+      transition: all 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(88,101,242,0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(88,101,242,0.1);
+    }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* CTA */
+    .cta {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 4rem 2rem 6rem;
+    }
+
+    .cta h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -1px;
+    }
+
+    .cta p { color: var(--muted); margin-bottom: 2rem; }
+
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <nav>
+    <div class="logo">Kaitrux</div>
+    <div class="nav-links">
+      <a href="#features">Funciones</a>
+      <a href="https://top.gg/bot/TU_BOT_ID" target="_blank">Votar</a>
+      <a href="https://discord.gg/TU_INVITE" target="_blank">Soporte</a>
+    </div>
+    <a href="http://51.83.6.5:20046/api/auth/login" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      Login con Discord
+    </a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge"><span></span> 436+ servidores activos</div>
+    <h1>El bot que tu<br>servidor <em>necesita</em></h1>
+    <p>Música, moderación, economía, notificaciones en tiempo real y mucho más. Todo en uno, sin complicaciones.</p>
+    <div class="hero-actions">
+      <a href="https://discord.com/oauth2/authorize?client_id=TU_BOT_ID&permissions=8&scope=bot+applications.commands" class="btn btn-primary" target="_blank">
+        Añadir a Discord
+      </a>
+      <a href="http://51.83.6.5:20046/api/auth/login" class="btn btn-ghost">
+        Ir al Dashboard →
+      </a>
+    </div>
+  </section>
+
+  <section class="stats" id="stats">
+    <div class="stat-card" style="animation-delay:0s">
+      <div class="stat-number" id="stat-servers">—</div>
+      <div class="stat-label">Servidores</div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.1s">
+      <div class="stat-number" id="stat-users">—</div>
+      <div class="stat-label">Usuarios</div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.2s">
+      <div class="stat-number" id="stat-commands">—</div>
+      <div class="stat-label">Comandos</div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.3s">
+      <div class="stat-number" id="stat-ping">—</div>
+      <div class="stat-label">Ping (ms)</div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <h2 class="section-title">Todo lo que necesitás</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎵</div>
+        <h3>Música sin interrupciones</h3>
+        <p>Reproduce desde YouTube y Spotify con autoplay inteligente, letras en tiempo real y panel interactivo.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h3>Notificaciones en vivo</h3>
+        <p>Recibe avisos automáticos cuando tu streamer favorito se conecta en Twitch, Kick o YouTube.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Moderación completa</h3>
+        <p>Warns, muteos, baneos y sistema de tickets profesional para mantener tu servidor en orden.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>Economía & Mascotas</h3>
+        <p>Trabaja, gana monedas, cuida tu mascota virtual y compra objetos en la tienda del servidor.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎭</div>
+        <h3>Roleplay & Reacciones</h3>
+        <p>Decenas de comandos de acción anime para interactuar con otros miembros del servidor.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <h3>Dashboard Web</h3>
+        <p>Configura tu servidor desde el navegador. Cambia el prefix, gestiona opciones y mucho más.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>¿Listo para el next level?</h2>
+    <p>Únete a los 436+ servidores que ya usan Kaitrux.</p>
+    <a href="https://discord.com/oauth2/authorize?client_id=TU_BOT_ID&permissions=8&scope=bot+applications.commands" class="btn btn-primary" target="_blank" style="font-size:1rem;padding:0.8rem 2rem;">
+      Añadir a Discord gratis
+    </a>
+  </section>
+
+  <footer>
+    <div class="logo">Kaitrux</div>
+    <span>© 2025 Kaitrux. Hecho con 💜</span>
+    <div style="display:flex;gap:1.5rem">
+      <a href="https://top.gg/bot/TU_BOT_ID" style="color:var(--muted);text-decoration:none">Top.gg</a>
+      <a href="https://discord.gg/TU_INVITE" style="color:var(--muted);text-decoration:none">Soporte</a>
+    </div>
+  </footer>
+
+  <script>
+    const API = 'http://51.83.6.5:20046';
+
+    // Cargar stats
+    async function loadStats() {
+      try {
+        const res  = await fetch(`${API}/api/stats`);
+        const data = await res.json();
+        const fmt  = n => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
+        document.getElementById('stat-servers').textContent  = fmt(data.servers);
+        document.getElementById('stat-users').textContent    = fmt(data.users);
+        document.getElementById('stat-commands').textContent = data.commands;
+        document.getElementById('stat-ping').textContent     = data.ping + 'ms';
+      } catch (_) {}
+    }
+
+    loadStats();
+  </script>
+</body>
+</html>

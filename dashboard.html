@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Kaitrux</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080810; --surface: #0f0f1a; --surface2: #141424;
+      --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
+      --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
+      --success: #57f287; --danger: #ed4245;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(8,8,16,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .user-info { display: flex; align-items: center; gap: 0.75rem; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent); }
+    .user-name { font-size: 0.9rem; font-weight: 500; }
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+    .page-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+    .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+    .guilds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+
+    .guild-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+    .guild-card:hover { border-color: rgba(88,101,242,0.4); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(88,101,242,0.1); }
+    .guild-card.no-bot { opacity: 0.5; cursor: default; }
+    .guild-card.no-bot:hover { transform: none; border-color: var(--border); box-shadow: none; }
+
+    .guild-icon { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface2); object-fit: cover; }
+    .guild-icon-placeholder { width: 64px; height: 64px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--accent); }
+    .guild-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+
+    .badge {
+      font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 100px; font-weight: 600;
+    }
+    .badge-bot { background: rgba(87,242,135,0.1); color: var(--success); border: 1px solid rgba(87,242,135,0.2); }
+    .badge-nobot { background: rgba(237,66,69,0.1); color: var(--danger); border: 1px solid rgba(237,66,69,0.2); }
+
+    .loading { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem; color: var(--muted); }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Kaitrux</div>
+    <div class="user-info">
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+      <span class="user-name" id="user-name">Cargando...</span>
+      <button class="logout-btn" onclick="logout()">Salir</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-title">Tus Servidores</div>
+    <div class="page-sub">Selecciona un servidor para configurarlo.</div>
+    <div id="guilds-container">
+      <div class="loading"><div class="spinner"></div><span>Cargando servidores...</span></div>
+    </div>
+  </main>
+
+  <script>
+    const API   = 'http://51.83.6.5:20046';
+    const token = new URLSearchParams(location.search).get('token') || sessionStorage.getItem('kaitrux_token');
+
+    if (!token) { location.href = 'index.html'; }
+    else { sessionStorage.setItem('kaitrux_token', token); if (location.search.includes('token=')) history.replaceState({}, '', 'dashboard.html'); }
+
+    async function apiFetch(path) {
+      const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+      return res.json();
+    }
+
+    async function init() {
+      try {
+        const [user, guilds] = await Promise.all([ apiFetch('/api/me'), apiFetch('/api/guilds') ]);
+        document.getElementById('user-name').textContent = user.username;
+        document.getElementById('user-avatar').src = user.avatar
+          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+          : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+        const container = document.getElementById('guilds-container');
+        if (!guilds.length) { container.innerHTML = '<div class="loading"><span>No tienes servidores con permisos de administrador.</span></div>'; return; }
+
+        container.innerHTML = `<div class="guilds-grid">${guilds.map((g, i) => `
+          <a class="guild-card${g.hasBot ? '' : ' no-bot'}" ${g.hasBot ? `href="server.html?id=${g.id}"` : ''} style="animation-delay:${i*0.05}s">
+            ${g.icon
+              ? `<img class="guild-icon" src="${g.icon}" alt="${g.name}">`
+              : `<div class="guild-icon-placeholder">${g.name.charAt(0).toUpperCase()}</div>`}
+            <div class="guild-name">${g.name}</div>
+            <span class="badge ${g.hasBot ? 'badge-bot' : 'badge-nobot'}">${g.hasBot ? '✓ Bot activo' : '✗ Sin bot'}</span>
+          </a>`).join('')}</div>`;
+      } catch (e) {
+        if (e.message !== 'Unauthorized') document.getElementById('guilds-container').innerHTML = '<div class="loading"><span>Error al cargar los servidores.</span></div>';
+      }
+    }
+
+    function logout() { sessionStorage.removeItem('kaitrux_token'); location.href = 'index.html'; }
+
+    init();
+  </script>
+</body>
+</html>

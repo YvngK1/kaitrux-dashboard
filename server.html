@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configurar Servidor — Kaitrux</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080810; --surface: #0f0f1a; --surface2: #141424;
+      --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
+      --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
+      --success: #57f287; --danger: #ed4245;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(8,8,16,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .back-btn { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .back-btn:hover { color: var(--text); }
+
+    main { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 3rem 2rem; }
+
+    .page-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 0.3rem; letter-spacing: -0.5px; }
+    .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+    .config-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 2rem; margin-bottom: 1.5rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .config-card h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .config-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.6; }
+
+    .input-group { display: flex; gap: 0.75rem; }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 1rem;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    .btn {
+      padding: 0.7rem 1.4rem; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.9rem;
+      cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--glow); }
+    .btn-primary:hover { background: #4752c4; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      padding: 0.8rem 1.4rem; border-radius: 10px;
+      font-size: 0.9rem; font-weight: 500;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.3s; pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: rgba(87,242,135,0.15); border: 1px solid rgba(87,242,135,0.3); color: var(--success); }
+    .toast.error   { background: rgba(237,66,69,0.15);  border: 1px solid rgba(237,66,69,0.3);  color: var(--danger); }
+
+    .loading { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem; color: var(--muted); }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Kaitrux</div>
+    <a href="dashboard.html" class="back-btn">← Volver</a>
+  </nav>
+
+  <main>
+    <div class="page-title" id="guild-name">Cargando...</div>
+    <div class="page-sub">Configuración del servidor</div>
+
+    <div id="content">
+      <div class="loading"><div class="spinner"></div><span>Cargando configuración...</span></div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API     = 'http://51.83.6.5:20046';
+    const token   = sessionStorage.getItem('kaitrux_token');
+    const guildId = new URLSearchParams(location.search).get('id');
+
+    if (!token || !guildId) location.href = 'dashboard.html';
+
+    async function apiFetch(path, opts = {}) {
+      const res = await fetch(`${API}${path}`, {
+        ...opts,
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+      });
+      if (res.status === 401) { sessionStorage.removeItem('kaitrux_token'); location.href = 'index.html'; }
+      return res.json();
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast ${type} show`;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function init() {
+      try {
+        const [guilds, config] = await Promise.all([ apiFetch('/api/guilds'), apiFetch(`/api/guilds/${guildId}/config`) ]);
+        const guild = guilds.find(g => g.id === guildId);
+        if (guild) document.getElementById('guild-name').textContent = guild.name;
+
+        document.getElementById('content').innerHTML = `
+          <div class="config-card">
+            <h3>⚙️ Prefix del bot</h3>
+            <p>El prefix es el símbolo que los usuarios usan antes de los comandos. Ej: <strong>!</strong>play, <strong>?</strong>help</p>
+            <div class="input-group">
+              <input type="text" id="prefix-input" value="${config.prefix || '!'}" maxlength="5" placeholder="!">
+              <button class="btn btn-primary" id="save-prefix" onclick="savePrefix()">Guardar</button>
+            </div>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('content').innerHTML = '<div class="loading"><span>Error cargando la configuración.</span></div>';
+      }
+    }
+
+    async function savePrefix() {
+      const input  = document.getElementById('prefix-input');
+      const btn    = document.getElementById('save-prefix');
+      const prefix = input.value.trim();
+      if (!prefix) return showToast('El prefix no puede estar vacío.', 'error');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      try {
+        const res = await apiFetch(`/api/guilds/${guildId}/config`, {
+          method: 'POST', body: JSON.stringify({ prefix }),
+        });
+        if (res.success) showToast(`✓ Prefix guardado: ${res.prefix}`);
+        else showToast('Error al guardar.', 'error');
+      } catch { showToast('Error al guardar.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Guardar'; }
+    }
+
+    init();
+  </script>
+</body>
+</html>
