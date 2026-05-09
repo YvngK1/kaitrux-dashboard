@@ -12,7 +12,7 @@
       --bg: #080810; --surface: #0f0f1a; --surface2: #141424;
       --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
       --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
-      --success: #57f287; --danger: #ed4245;
+      --success: #57f287; --danger: #ed4245; --warning: #fee75c;
     }
     body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
     body::before {
@@ -20,7 +20,6 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none; z-index: 0;
     }
-
     nav {
       position: sticky; top: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
@@ -31,71 +30,177 @@
     .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .back-btn { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
     .back-btn:hover { color: var(--text); }
-
-    main { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 3rem 2rem; }
-
-    .page-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 0.3rem; letter-spacing: -0.5px; }
-    .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
-
-    .config-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      padding: 2rem; margin-bottom: 1.5rem;
-      animation: fadeUp 0.4s ease both;
-    }
-
-    .config-card h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
-    .config-card p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; line-height: 1.6; }
-
-    .input-group { display: flex; gap: 0.75rem; }
-
-    input[type="text"] {
-      flex: 1;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 0.7rem 1rem;
-      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
-      outline: none; transition: border-color 0.2s;
-    }
+    main { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+    .page-header { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 2.5rem; }
+    .guild-icon-header { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+    .guild-icon-ph { width: 52px; height: 52px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--accent); }
+    .page-title { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+    .page-sub { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .tab { padding: 0.55rem 1.2rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.2s; }
+    .tab:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 16px var(--glow); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .config-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeUp 0.35s ease both; }
+    .card-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.4rem; }
+    .card-icon { font-size: 1.4rem; }
+    .card-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; }
+    .card-desc { color: var(--muted); font-size: 0.87rem; margin-bottom: 1.4rem; line-height: 1.6; }
+    .input-row { display: flex; gap: 0.75rem; align-items: center; }
+    .input-group-full { display: flex; flex-direction: column; gap: 0.5rem; }
+    .input-label { font-size: 0.82rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="text"] { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.92rem; outline: none; transition: border-color 0.2s; width: 100%; }
     input[type="text"]:focus { border-color: var(--accent); }
-
-    .btn {
-      padding: 0.7rem 1.4rem; border-radius: 8px;
-      font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.9rem;
-      cursor: pointer; border: none; transition: all 0.2s;
-    }
-    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--glow); }
+    .btn { padding: 0.65rem 1.3rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.88rem; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 0 16px var(--glow); }
     .btn-primary:hover { background: #4752c4; transform: translateY(-1px); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .toast {
-      position: fixed; bottom: 2rem; right: 2rem;
-      padding: 0.8rem 1.4rem; border-radius: 10px;
-      font-size: 0.9rem; font-weight: 500;
-      opacity: 0; transform: translateY(10px);
-      transition: all 0.3s; pointer-events: none; z-index: 999;
-    }
+    .btn-danger { background: rgba(237,66,69,0.15); color: var(--danger); border: 1px solid rgba(237,66,69,0.25); }
+    .btn-danger:hover { background: rgba(237,66,69,0.25); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+    .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+    .warns-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
+    .warn-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .warn-uid { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
+    .badge-warn { background: rgba(254,231,92,0.12); color: var(--warning); border: 1px solid rgba(254,231,92,0.2); font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 100px; font-weight: 600; }
+    .logs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .log-field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .notify-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+    .notify-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1.2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .notify-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .notify-name { font-weight: 500; font-size: 0.92rem; }
+    .notify-ch { font-size: 0.78rem; color: var(--muted); }
+    .notify-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+    .notify-dot.off { background: var(--danger); }
+    .notify-form { background: var(--surface2); border: 1px solid rgba(88,101,242,0.2); border-radius: 12px; padding: 1.2rem; margin-top: 1rem; display: none; }
+    .notify-form.open { display: block; animation: fadeUp 0.25s ease; }
+    .notify-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 2rem; color: var(--muted); text-align: center; font-size: 0.9rem; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.4rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; z-index: 999; }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.success { background: rgba(87,242,135,0.15); border: 1px solid rgba(87,242,135,0.3); color: var(--success); }
-    .toast.error   { background: rgba(237,66,69,0.15);  border: 1px solid rgba(237,66,69,0.3);  color: var(--danger); }
-
-    .loading { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem; color: var(--muted); }
-    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-
+    .toast.success { background: rgba(87,242,135,0.12); border: 1px solid rgba(87,242,135,0.25); color: var(--success); }
+    .toast.error   { background: rgba(237,66,69,0.12);  border: 1px solid rgba(237,66,69,0.25);  color: var(--danger); }
+    .loading { display: flex; align-items: center; gap: 0.75rem; padding: 1.5rem; color: var(--muted); font-size: 0.9rem; }
+    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 600px) { .logs-grid, .notify-form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <nav>
     <div class="logo">Kaitrux</div>
-    <a href="dashboard.html" class="back-btn">← Volver</a>
+    <a href="/dashboard.html" class="back-btn">← Volver</a>
   </nav>
-
   <main>
-    <div class="page-title" id="guild-name">Cargando...</div>
-    <div class="page-sub">Configuración del servidor</div>
+    <div class="page-header">
+      <div id="guild-icon" class="guild-icon-ph">?</div>
+      <div>
+        <div class="page-title" id="guild-name">Cargando...</div>
+        <div class="page-sub">Panel de configuración</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'prefix')">⚙️ Prefix</button>
+      <button class="tab" onclick="switchTab(this,'warns')">⚠️ Warns</button>
+      <button class="tab" onclick="switchTab(this,'logs')">📋 Logs</button>
+      <button class="tab" onclick="switchTab(this,'notify')">🔔 Notificaciones</button>
+    </div>
 
-    <div id="content">
-      <div class="loading"><div class="spinner"></div><span>Cargando configuración...</span></div>
+    <!-- PREFIX -->
+    <div class="panel active" id="panel-prefix">
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">⚙️</span><span class="card-title">Prefix del bot</span></div>
+        <div class="card-desc">El símbolo que los usuarios usan antes de los comandos. Ej: <strong>!</strong>ping, <strong>?</strong>help</div>
+        <div class="input-row">
+          <input type="text" id="prefix-input" maxlength="5" placeholder="!" style="max-width:120px">
+          <button class="btn btn-primary" id="save-prefix" onclick="savePrefix()">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARNS -->
+    <div class="panel" id="panel-warns">
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">⚠️</span><span class="card-title">Advertencias</span></div>
+        <div class="card-desc">Usuarios con advertencias activas. Podés limpiar el historial de cualquier usuario.</div>
+        <input type="text" id="warn-filter" placeholder="Filtrar por ID de usuario..." oninput="filterWarns()" style="max-width:320px;margin-bottom:1rem">
+        <div class="warns-list" id="warns-list"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="panel" id="panel-logs">
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">📋</span><span class="card-title">Canales de log</span></div>
+        <div class="card-desc">Configurá en qué canal se registra cada evento. Ingresá el ID del canal de Discord.</div>
+        <div class="logs-grid" id="logs-grid"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+        <div style="margin-top:1.2rem"><button class="btn btn-primary" id="save-logs" onclick="saveLogs()">Guardar canales</button></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICACIONES -->
+    <div class="panel" id="panel-notify">
+      <!-- TWITCH -->
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">🟣</span><span class="card-title">Twitch</span></div>
+        <div class="card-desc">Avisá cuando un streamer se conecta en Twitch.</div>
+        <div class="notify-list" id="twitch-list"><div class="loading"><div class="spinner"></div></div></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:1rem" onclick="toggleForm('twitch-form')">+ Agregar</button>
+        <div class="notify-form" id="twitch-form">
+          <div class="notify-form-grid">
+            <div class="input-group-full"><span class="input-label">Canal de Twitch</span><input type="text" id="twitch-channel" placeholder="ej: shroud"></div>
+            <div class="input-group-full"><span class="input-label">Canal Discord (ID)</span><input type="text" id="twitch-discord" placeholder="ID del canal"></div>
+          </div>
+          <div class="input-group-full" style="margin-bottom:0.75rem"><span class="input-label">Mensaje personalizado (opcional)</span><input type="text" id="twitch-msg" placeholder="¡{streamer} está en vivo!"></div>
+          <button class="btn btn-primary btn-sm" onclick="addNotify('twitch')">Agregar</button>
+        </div>
+      </div>
+      <!-- KICK -->
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">🟢</span><span class="card-title">Kick</span></div>
+        <div class="card-desc">Avisá cuando un streamer se conecta en Kick.</div>
+        <div class="notify-list" id="kick-list"><div class="loading"><div class="spinner"></div></div></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:1rem" onclick="toggleForm('kick-form')">+ Agregar</button>
+        <div class="notify-form" id="kick-form">
+          <div class="notify-form-grid">
+            <div class="input-group-full"><span class="input-label">Canal de Kick</span><input type="text" id="kick-channel" placeholder="ej: xqc"></div>
+            <div class="input-group-full"><span class="input-label">Canal Discord (ID)</span><input type="text" id="kick-discord" placeholder="ID del canal"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addNotify('kick')">Agregar</button>
+        </div>
+      </div>
+      <!-- YOUTUBE -->
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">🔴</span><span class="card-title">YouTube</span></div>
+        <div class="card-desc">Avisá cuando un canal sube un nuevo video.</div>
+        <div class="notify-list" id="youtube-list"><div class="loading"><div class="spinner"></div></div></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:1rem" onclick="toggleForm('youtube-form')">+ Agregar</button>
+        <div class="notify-form" id="youtube-form">
+          <div class="notify-form-grid">
+            <div class="input-group-full"><span class="input-label">ID Canal YouTube</span><input type="text" id="youtube-channel" placeholder="UCxxxxxx"></div>
+            <div class="input-group-full"><span class="input-label">Canal Discord (ID)</span><input type="text" id="youtube-discord" placeholder="ID del canal"></div>
+          </div>
+          <div class="input-group-full" style="margin-bottom:0.75rem"><span class="input-label">Mensaje personalizado (opcional)</span><input type="text" id="youtube-msg" placeholder="¡Nuevo video!"></div>
+          <button class="btn btn-primary btn-sm" onclick="addNotify('youtube')">Agregar</button>
+        </div>
+      </div>
+      <!-- X -->
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">🐦</span><span class="card-title">X (Twitter)</span></div>
+        <div class="card-desc">Avisá cuando una cuenta hace un nuevo tweet.</div>
+        <div class="notify-list" id="x-list"><div class="loading"><div class="spinner"></div></div></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:1rem" onclick="toggleForm('x-form')">+ Agregar</button>
+        <div class="notify-form" id="x-form">
+          <div class="notify-form-grid">
+            <div class="input-group-full"><span class="input-label">Usuario de X</span><input type="text" id="x-username" placeholder="ej: elonmusk"></div>
+            <div class="input-group-full"><span class="input-label">Canal Discord (ID)</span><input type="text" id="x-discord" placeholder="ID del canal"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addNotify('x')">Agregar</button>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -105,15 +210,26 @@
     const API     = '';
     const token   = sessionStorage.getItem('kaitrux_token');
     const guildId = new URLSearchParams(location.search).get('id');
+    if (!token || !guildId) location.href = '/dashboard.html';
 
-    if (!token || !guildId) location.href = 'dashboard.html';
+    let warnsData = [];
+    const logFields = [
+      { key: 'ban',       label: '🔨 Baneos' },
+      { key: 'kick',      label: '👢 Kicks' },
+      { key: 'warn',      label: '⚠️ Warns' },
+      { key: 'msgDelete', label: '🗑️ Mensajes eliminados' },
+      { key: 'msgEdit',   label: '✏️ Mensajes editados' },
+      { key: 'join',      label: '👋 Entradas' },
+      { key: 'leave',     label: '🚪 Salidas' },
+      { key: 'autoMod',   label: '🤖 AutoMod' },
+    ];
 
     async function apiFetch(path, opts = {}) {
       const res = await fetch(`${API}${path}`, {
         ...opts,
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
       });
-      if (res.status === 401) { sessionStorage.removeItem('kaitrux_token'); location.href = 'index.html'; }
+      if (res.status === 401) { sessionStorage.removeItem('kaitrux_token'); location.href = '/index.html'; }
       return res.json();
     }
 
@@ -123,41 +239,184 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    async function init() {
-      try {
-        const [guilds, config] = await Promise.all([ apiFetch('/api/guilds'), apiFetch(`/api/guilds/${guildId}/config`) ]);
-        const guild = guilds.find(g => g.id === guildId);
-        if (guild) document.getElementById('guild-name').textContent = guild.name;
-
-        document.getElementById('content').innerHTML = `
-          <div class="config-card">
-            <h3>⚙️ Prefix del bot</h3>
-            <p>El prefix es el símbolo que los usuarios usan antes de los comandos. Ej: <strong>!</strong>play, <strong>?</strong>help</p>
-            <div class="input-group">
-              <input type="text" id="prefix-input" value="${config.prefix || '!'}" maxlength="5" placeholder="!">
-              <button class="btn btn-primary" id="save-prefix" onclick="savePrefix()">Guardar</button>
-            </div>
-          </div>
-        `;
-      } catch (e) {
-        document.getElementById('content').innerHTML = '<div class="loading"><span>Error cargando la configuración.</span></div>';
-      }
+    function switchTab(el, name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(`panel-${name}`).classList.add('active');
     }
 
+    function toggleForm(id) { document.getElementById(id).classList.toggle('open'); }
+
+    async function init() {
+      try {
+        const [guilds, config] = await Promise.all([
+          apiFetch('/api/guilds'),
+          apiFetch(`/api/guilds/${guildId}/config`),
+        ]);
+        const guild = guilds.find(g => g.id === guildId);
+        if (guild) {
+          document.getElementById('guild-name').textContent = guild.name;
+          const el = document.getElementById('guild-icon');
+          if (guild.icon) {
+            el.outerHTML = `<img class="guild-icon-header" src="${guild.icon}" alt="${guild.name}" style="width:52px;height:52px;border-radius:50%;border:2px solid var(--accent);object-fit:cover">`;
+          } else {
+            el.textContent = guild.name.charAt(0).toUpperCase();
+          }
+        }
+        document.getElementById('prefix-input').value = config.prefix || '!';
+      } catch(e) { console.error(e); }
+      loadWarns();
+      loadLogs();
+      ['twitch','kick','youtube','x'].forEach(loadNotify);
+    }
+
+    // PREFIX
     async function savePrefix() {
-      const input  = document.getElementById('prefix-input');
-      const btn    = document.getElementById('save-prefix');
+      const input = document.getElementById('prefix-input');
+      const btn   = document.getElementById('save-prefix');
       const prefix = input.value.trim();
       if (!prefix) return showToast('El prefix no puede estar vacío.', 'error');
       btn.disabled = true; btn.textContent = 'Guardando...';
       try {
-        const res = await apiFetch(`/api/guilds/${guildId}/config`, {
-          method: 'POST', body: JSON.stringify({ prefix }),
-        });
+        const res = await apiFetch(`/api/guilds/${guildId}/config`, { method: 'POST', body: JSON.stringify({ prefix }) });
         if (res.success) showToast(`✓ Prefix guardado: ${res.prefix}`);
         else showToast('Error al guardar.', 'error');
       } catch { showToast('Error al guardar.', 'error'); }
       finally { btn.disabled = false; btn.textContent = 'Guardar'; }
+    }
+
+    // WARNS
+    async function loadWarns() {
+      try {
+        warnsData = await apiFetch(`/api/guilds/${guildId}/warns`);
+        renderWarns(warnsData);
+      } catch { document.getElementById('warns-list').innerHTML = '<div class="empty-state">Error cargando warns.</div>'; }
+    }
+
+    function renderWarns(data) {
+      const list = document.getElementById('warns-list');
+      const filtered = data.filter(w => w.warnings && w.warnings.length > 0);
+      if (!filtered.length) { list.innerHTML = '<div class="empty-state">✅ No hay advertencias activas.</div>'; return; }
+      list.innerHTML = filtered.map(w => `
+        <div class="warn-item">
+          <div><div style="font-weight:500;font-size:0.92rem">Usuario</div><div class="warn-uid">${w.userID}</div></div>
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <span class="badge-warn">⚠️ ${w.warnings.length} warn${w.warnings.length !== 1 ? 's' : ''}</span>
+            <button class="btn btn-danger btn-sm" onclick="clearWarns('${w.userID}')">Limpiar</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function filterWarns() {
+      const q = document.getElementById('warn-filter').value.trim().toLowerCase();
+      renderWarns(q ? warnsData.filter(w => w.userID.toLowerCase().includes(q)) : warnsData);
+    }
+
+    async function clearWarns(userId) {
+      if (!confirm(`¿Limpiar todas las advertencias de ${userId}?`)) return;
+      try {
+        await apiFetch(`/api/guilds/${guildId}/warns/${userId}`, { method: 'DELETE' });
+        showToast('✓ Advertencias limpiadas');
+        loadWarns();
+      } catch { showToast('Error al limpiar.', 'error'); }
+    }
+
+    // LOGS
+    async function loadLogs() {
+      const grid = document.getElementById('logs-grid');
+      try {
+        const data = await apiFetch(`/api/guilds/${guildId}/logs`);
+        grid.innerHTML = logFields.map(f => `
+          <div class="log-field">
+            <span class="input-label">${f.label}</span>
+            <input type="text" id="log-${f.key}" value="${data[f.key] || ''}" placeholder="ID del canal">
+          </div>`).join('');
+      } catch { grid.innerHTML = '<span style="color:var(--danger)">Error cargando logs.</span>'; }
+    }
+
+    async function saveLogs() {
+      const btn = document.getElementById('save-logs');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      const channels = {};
+      logFields.forEach(f => { channels[f.key] = document.getElementById(`log-${f.key}`)?.value.trim() || null; });
+      try {
+        const res = await apiFetch(`/api/guilds/${guildId}/logs`, { method: 'POST', body: JSON.stringify({ channels }) });
+        if (res.success) showToast('✓ Canales guardados');
+        else showToast('Error al guardar.', 'error');
+      } catch { showToast('Error al guardar.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Guardar canales'; }
+    }
+
+    // NOTIFY
+    const notifyLabel = {
+      twitch:  n => n.twitchChannel,
+      kick:    n => n.kickChannel,
+      youtube: n => n.youtubeChannelId,
+      x:       n => n.xUsername,
+    };
+
+    async function loadNotify(platform) {
+      const list = document.getElementById(`${platform}-list`);
+      try {
+        const data = await apiFetch(`/api/guilds/${guildId}/notify/${platform}`);
+        if (!data.length) { list.innerHTML = '<div class="empty-state">📭 Sin notificaciones configuradas.</div>'; return; }
+        list.innerHTML = data.map(n => `
+          <div class="notify-item">
+            <div class="notify-info">
+              <span class="notify-name">${notifyLabel[platform](n)}</span>
+              <span class="notify-ch">→ Canal: ${n.discordChannel}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <div class="notify-dot ${n.enabled ? '' : 'off'}"></div>
+              <button class="btn btn-danger btn-sm" onclick="deleteNotify('${platform}','${n._id}')">Eliminar</button>
+            </div>
+          </div>`).join('');
+      } catch { list.innerHTML = '<div class="empty-state">Error cargando.</div>'; }
+    }
+
+    async function addNotify(platform) {
+      const discordChannel = document.getElementById(`${platform}-discord`).value.trim();
+      if (!discordChannel) return showToast('Ingresá el ID del canal de Discord.', 'error');
+      let body = { userId: 'dashboard', discordChannel };
+
+      if (platform === 'twitch') {
+        const ch = document.getElementById('twitch-channel').value.trim();
+        if (!ch) return showToast('Ingresá el canal de Twitch.', 'error');
+        body.twitchChannel  = ch;
+        body.customMessage  = document.getElementById('twitch-msg').value.trim() || null;
+      } else if (platform === 'kick') {
+        const ch = document.getElementById('kick-channel').value.trim();
+        if (!ch) return showToast('Ingresá el canal de Kick.', 'error');
+        body.kickChannel = ch;
+      } else if (platform === 'youtube') {
+        const ch = document.getElementById('youtube-channel').value.trim();
+        if (!ch) return showToast('Ingresá el ID del canal de YouTube.', 'error');
+        body.youtubeChannelId = ch;
+        body.customMessage    = document.getElementById('youtube-msg').value.trim() || null;
+      } else if (platform === 'x') {
+        const un = document.getElementById('x-username').value.trim();
+        if (!un) return showToast('Ingresá el usuario de X.', 'error');
+        body.xUsername = un;
+      }
+
+      try {
+        const res = await apiFetch(`/api/guilds/${guildId}/notify/${platform}`, { method: 'POST', body: JSON.stringify(body) });
+        if (res.success) {
+          showToast('✓ Notificación agregada');
+          document.getElementById(`${platform}-form`).classList.remove('open');
+          loadNotify(platform);
+        } else showToast('Error al agregar.', 'error');
+      } catch { showToast('Error al agregar.', 'error'); }
+    }
+
+    async function deleteNotify(platform, id) {
+      if (!confirm('¿Eliminar esta notificación?')) return;
+      try {
+        await apiFetch(`/api/guilds/${guildId}/notify/${platform}/${id}`, { method: 'DELETE' });
+        showToast('✓ Eliminada');
+        loadNotify(platform);
+      } catch { showToast('Error al eliminar.', 'error'); }
     }
 
     init();
