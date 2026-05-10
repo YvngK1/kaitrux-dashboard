@@ -333,6 +333,44 @@ app.delete('/api/guilds/:guildId/notify/x/:id', authMiddleware, async (req, res)
 });
 
 // ──────────────────────────────────────────────
+
+// ──────────────────────────────────────────────
+// API - PLAYER DE MÚSICA
+// ──────────────────────────────────────────────
+const BOT_BASE_URL = (process.env.BOT_STATUS_URL || 'http://51.83.6.5:20046/status').replace('/status', '');
+
+async function fetchBotPlayer(guildId) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${BOT_BASE_URL}/player/${guildId}`, { signal: controller.signal });
+    clearTimeout(timeout);
+    return await res.json();
+  } catch { return null; }
+}
+
+app.get('/api/player/:guildId', authMiddleware, async (req, res) => {
+  const data = await fetchBotPlayer(req.params.guildId);
+  if (!data) return res.status(503).json({ error: 'Bot no disponible' });
+  res.json(data);
+});
+
+app.post('/api/player/:guildId/:action', authMiddleware, async (req, res) => {
+  const { guildId, action } = req.params;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const r = await fetch(`${BOT_BASE_URL}/player/${guildId}/${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    res.json(await r.json());
+  } catch { res.status(503).json({ error: 'Bot no disponible' }); }
+});
+
 // API - STATUS COMPLETO
 // ──────────────────────────────────────────────
 const BOT_STATUS_URL = process.env.BOT_STATUS_URL || 'http://51.83.6.5:20046/status';
