@@ -1,217 +1,354 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaitrux • Music Player</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        :root { --neon: #00ffcc; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a, #1a0033);
-            color: white;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .header {
-            padding: 15px 30px;
-            background: rgba(0,0,0,0.7);
-            border-bottom: 1px solid rgba(0,255,204,0.2);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .header h1 { font-size: 24px; }
-        .player {
-            flex: 1;
-            display: flex;
-            padding: 30px;
-            gap: 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .now-playing {
-            flex: 1;
-            text-align: center;
-        }
-        .album-art {
-            width: 320px;
-            height: 320px;
-            border-radius: 12px;
-            box-shadow: 0 0 60px rgba(0,255,204,0.4);
-            object-fit: cover;
-            border: 4px solid var(--neon);
-        }
-        .song-info {
-            margin-top: 25px;
-        }
-        .song-title { font-size: 28px; font-weight: 600; }
-        .song-artist { font-size: 18px; opacity: 0.8; margin-top: 5px; }
-        .progress-container {
-            margin: 30px 0;
-        }
-        .progress {
-            height: 6px;
-            background: #333;
-            border-radius: 9999px;
-            position: relative;
-            cursor: pointer;
-        }
-        .progress-bar {
-            height: 100%;
-            background: var(--neon);
-            border-radius: 9999px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .time {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            font-size: 32px;
-            margin: 15px 0;
-        }
-        .controls i { cursor: pointer; transition: all 0.2s; }
-        .controls i:hover { color: var(--neon); transform: scale(1.1); }
-        .play-pause { font-size: 48px; color: var(--neon); }
-        .queue {
-            width: 380px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 12px;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .queue h3 { margin-bottom: 15px; color: var(--neon); }
-        .queue-item {
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background: rgba(255,255,255,0.05);
-        }
-        .queue-item:hover { background: rgba(0,255,204,0.1); }
-        .footer {
-            padding: 15px;
-            text-align: center;
-            font-size: 14px;
-            opacity: 0.6;
-        }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Player — Kaitrux</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080810; --surface: #0f0f1a; --surface2: #141424; --surface3: #1a1a2e;
+      --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
+      --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
+      --success: #57f287; --danger: #ed4245;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0; }
+
+    /* NAV */
+    nav { position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border); }
+    .logo { font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+    .back-btn { color:var(--muted);text-decoration:none;font-size:0.88rem;transition:color 0.2s;display:flex;align-items:center;gap:0.4rem; }
+    .back-btn:hover { color:var(--text); }
+
+    /* LAYOUT */
+    main { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start; }
+
+    /* PLAYER CARD */
+    .player-card { background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2.5rem;position:relative;overflow:hidden; }
+    .player-bg { position:absolute;inset:0;z-index:0;opacity:0.08;filter:blur(60px);background-size:cover;background-position:center;transition:background-image 0.5s; }
+
+    /* ALBUM ART */
+    .album-wrap { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2rem; }
+    .album-art { width:260px;height:260px;border-radius:16px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,0.5);transition:all 0.4s;border:1px solid var(--border); }
+    .album-art.playing { animation:float 3s ease-in-out infinite; }
+    .album-placeholder { width:260px;height:260px;border-radius:16px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:5rem;border:1px solid var(--border); }
+
+    /* TRACK INFO */
+    .track-info { text-align:center;width:100%; }
+    .track-title { font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .track-author { color:var(--muted);font-size:0.95rem;margin-bottom:0.5rem; }
+    .track-requester { font-size:0.78rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:0.2rem 0.7rem;border-radius:100px;display:inline-block; }
+
+    /* PROGRESS */
+    .progress-section { width:100%;margin-top:1rem; }
+    .progress-times { display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem; }
+    .progress-bar { width:100%;height:4px;background:var(--surface2);border-radius:100px;cursor:pointer;position:relative;transition:height 0.2s; }
+    .progress-bar:hover { height:6px; }
+    .progress-fill { height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.5s linear;pointer-events:none; }
+
+    /* CONTROLS */
+    .controls { display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:1.5rem; }
+    .ctrl-btn { background:none;border:none;cursor:pointer;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;justify-content:center;border-radius:50%;padding:0.5rem; }
+    .ctrl-btn:hover { color:var(--text);transform:scale(1.1); }
+    .ctrl-btn.play-btn { background:linear-gradient(135deg,var(--accent),#7b68ee);color:#fff;width:56px;height:56px;box-shadow:0 0 24px var(--glow);border-radius:50%;padding:0; }
+    .ctrl-btn.play-btn:hover { transform:scale(1.08);box-shadow:0 0 40px rgba(88,101,242,0.6); }
+    .ctrl-btn svg { pointer-events:none; }
+
+    /* VOLUME */
+    .volume-row { display:flex;align-items:center;gap:0.75rem;margin-top:1.2rem; }
+    .volume-icon { color:var(--muted);font-size:1rem;flex-shrink:0; }
+    .volume-slider { flex:1;-webkit-appearance:none;height:4px;border-radius:100px;background:var(--surface2);outline:none;cursor:pointer; }
+    .volume-slider::-webkit-slider-thumb { -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--glow); }
+    .volume-val { font-size:0.78rem;color:var(--muted);min-width:30px;text-align:right; }
+
+    /* INACTIVE */
+    .inactive-state { display:flex;flex-direction:column;align-items:center;gap:1rem;padding:3rem;color:var(--muted);text-align:center; }
+    .inactive-icon { font-size:4rem;opacity:0.3; }
+    .inactive-text { font-size:1rem; }
+
+    /* QUEUE */
+    .queue-card { background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden;position:sticky;top:80px; }
+    .queue-header { padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+    .queue-title { font-family:'Syne',sans-serif;font-weight:700;font-size:1rem; }
+    .queue-count { font-size:0.78rem;color:var(--muted);background:var(--surface2);padding:0.2rem 0.6rem;border-radius:100px; }
+    .queue-list { max-height:520px;overflow-y:auto;padding:0.5rem; }
+    .queue-list::-webkit-scrollbar { width:4px; }
+    .queue-list::-webkit-scrollbar-track { background:transparent; }
+    .queue-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:100px; }
+    .queue-item { display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;border-radius:10px;transition:background 0.2s;cursor:default; }
+    .queue-item:hover { background:var(--surface2); }
+    .queue-item.current { background:rgba(88,101,242,0.1);border:1px solid rgba(88,101,242,0.2); }
+    .queue-num { font-size:0.75rem;color:var(--muted);min-width:20px;text-align:center; }
+    .queue-thumb { width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface2); }
+    .queue-info { flex:1;min-width:0; }
+    .queue-name { font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .queue-artist { font-size:0.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .queue-dur { font-size:0.72rem;color:var(--muted);flex-shrink:0;font-family:monospace; }
+    .now-badge { font-size:0.65rem;background:rgba(88,101,242,0.2);color:var(--accent);padding:0.1rem 0.5rem;border-radius:100px;flex-shrink:0; }
+
+    /* SPINNER */
+    .loading { display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:3rem;color:var(--muted); }
+    .spinner { width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
+
+    /* SERVER SELECTOR */
+    .server-selector { position:relative;z-index:1;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap; }
+    .server-select { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.6rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;cursor:pointer;min-width:200px; }
+    .server-select:focus { border-color:var(--accent); }
+    .server-select option { background:var(--surface2); }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(1deg)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:768px) { main{grid-template-columns:1fr;} .queue-card{position:static;} }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <i class="fas fa-music" style="color:#00ffcc; font-size:28px;"></i>
-        <h1>Kaitrux Music</h1>
-    </div>
+  <nav>
+    <div class="logo">Kaitrux</div>
+    <a href="/dashboard.html" class="back-btn">← Dashboard</a>
+  </nav>
 
-    <div class="player">
-        <!-- Now Playing -->
-        <div class="now-playing">
-            <img id="albumArt" class="album-art" src="https://via.placeholder.com/320" alt="Album Art">
-            <div class="song-info">
-                <div id="songTitle" class="song-title">Cargando canción...</div>
-                <div id="songArtist" class="song-artist">—</div>
+  <div style="position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 2rem 0">
+    <div style="margin-bottom:0.3rem;font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800">🎵 Player</div>
+    <div style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem">Controlá la música de tu servidor en tiempo real.</div>
+    <div class="server-selector">
+      <select class="server-select" id="guild-select" onchange="selectGuild(this.value)">
+        <option value="">Seleccioná un servidor...</option>
+      </select>
+      <span style="font-size:0.82rem;color:var(--muted)" id="refresh-label"></span>
+    </div>
+  </div>
+
+  <main id="main-content">
+    <div style="grid-column:1/-1" class="loading"><div class="spinner"></div> Cargando servidores...</div>
+  </main>
+
+  <script>
+    const API     = '';
+    const token   = sessionStorage.getItem('kaitrux_token');
+    if (!token) location.href = '/dashboard.html';
+
+    let currentGuildId = null;
+    let pollInterval   = null;
+    let position       = 0;
+    let positionTimer  = null;
+    let duration       = 0;
+    let isPlaying      = false;
+
+    async function apiFetch(path, opts = {}) {
+      const res = await fetch(`${API}${path}`, {
+        ...opts,
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+      });
+      if (res.status === 401) { sessionStorage.removeItem('kaitrux_token'); location.href = '/index.html'; }
+      return res.json();
+    }
+
+    function fmtTime(ms) {
+      if (!ms) return '0:00';
+      const s = Math.floor(ms / 1000);
+      const m = Math.floor(s / 60);
+      return `${m}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    // Cargar servidores con bot activo
+    async function loadGuilds() {
+      const guilds = await apiFetch('/api/guilds');
+      const select = document.getElementById('guild-select');
+      const active = guilds.filter(g => g.hasBot);
+      active.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+      });
+      if (active.length === 1) {
+        select.value = active[0].id;
+        selectGuild(active[0].id);
+      } else {
+        document.getElementById('main-content').innerHTML = `
+          <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:4rem;color:var(--muted);text-align:center">
+            <div style="font-size:3rem">🎵</div>
+            <div>Seleccioná un servidor para ver el player.</div>
+          </div>`;
+      }
+    }
+
+    function selectGuild(guildId) {
+      if (!guildId) return;
+      currentGuildId = guildId;
+      clearInterval(pollInterval);
+      clearInterval(positionTimer);
+      loadPlayer();
+      pollInterval = setInterval(loadPlayer, 5000);
+    }
+
+    async function loadPlayer() {
+      if (!currentGuildId) return;
+      try {
+        const data = await apiFetch(`/api/player/${currentGuildId}`);
+        renderPlayer(data);
+        document.getElementById('refresh-label').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
+      } catch { /* silencioso */ }
+    }
+
+    function renderPlayer(data) {
+      const main = document.getElementById('main-content');
+
+      if (!data || !data.active) {
+        main.innerHTML = `
+          <div class="player-card" style="grid-column:1/-1">
+            <div class="inactive-state">
+              <div class="inactive-icon">🎵</div>
+              <div class="inactive-text">No hay música reproduciéndose en este servidor.</div>
+              <div style="font-size:0.82rem">Usá <strong>!play</strong> en Discord para empezar.</div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const track = data.currentTrack;
+      isPlaying   = data.isPlaying && !data.isPaused;
+      position    = data.position || 0;
+      duration    = track?.duration || 0;
+
+      // Progress timer local
+      clearInterval(positionTimer);
+      if (isPlaying) {
+        positionTimer = setInterval(() => {
+          position += 500;
+          if (position > duration) position = duration;
+          updateProgress();
+        }, 500);
+      }
+
+      const thumb = track?.thumbnail || '';
+      const pct   = duration ? Math.min((position / duration) * 100, 100) : 0;
+
+      main.innerHTML = `
+        <div class="player-card">
+          <div class="player-bg" id="player-bg" style="background-image:url('${thumb}')"></div>
+          <div class="album-wrap">
+            ${thumb
+              ? `<img class="album-art ${isPlaying ? 'playing' : ''}" id="album-art" src="${thumb}" alt="cover">`
+              : `<div class="album-placeholder">🎵</div>`}
+            <div class="track-info">
+              <div class="track-title" title="${track?.title || ''}">${track?.title || 'Sin título'}</div>
+              <div class="track-author">${track?.author || 'Artista desconocido'}</div>
+              ${track?.requester ? `<span class="track-requester">Pedido por ${track.requester}</span>` : ''}
             </div>
 
-            <div class="progress-container">
-                <div class="progress" id="progressBar">
-                    <div class="progress-bar" id="progress"></div>
-                </div>
-                <div class="time">
-                    <span id="currentTime">0:00</span>
-                    <span id="duration">0:00</span>
-                </div>
+            <div class="progress-section">
+              <div class="progress-times">
+                <span id="pos-label">${fmtTime(position)}</span>
+                <span>${track?.isStream ? '🔴 En vivo' : fmtTime(duration)}</span>
+              </div>
+              <div class="progress-bar" onclick="seekTo(event, this)">
+                <div class="progress-fill" id="progress-fill" style="width:${pct}%"></div>
+              </div>
             </div>
 
             <div class="controls">
-                <i class="fas fa-step-backward" id="prevBtn"></i>
-                <i class="fas fa-play-circle play-pause" id="playPauseBtn"></i>
-                <i class="fas fa-step-forward" id="nextBtn"></i>
+              <button class="ctrl-btn" onclick="playerAction('previous')" title="Anterior">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+              </button>
+              <button class="ctrl-btn play-btn" id="play-btn" onclick="togglePlay()">
+                ${isPlaying
+                  ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
+                  : `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`}
+              </button>
+              <button class="ctrl-btn" onclick="playerAction('skip')" title="Siguiente">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.02 2.14L8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+              </button>
+              <button class="ctrl-btn" onclick="playerAction('stop')" title="Detener" style="margin-left:0.5rem">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+              </button>
             </div>
+
+            <div class="volume-row">
+              <span class="volume-icon">🔈</span>
+              <input type="range" class="volume-slider" min="0" max="100" value="${data.volume || 100}" oninput="setVolume(this.value)" id="vol-slider">
+              <span class="volume-val" id="vol-val">${data.volume || 100}</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Queue -->
-        <div class="queue">
-            <h3><i class="fas fa-list"></i> Cola de reproducción</h3>
-            <div id="queueList"></div>
-        </div>
-    </div>
+        <div class="queue-card">
+          <div class="queue-header">
+            <span class="queue-title">Cola</span>
+            <span class="queue-count">${data.queueLength || 0} canciones</span>
+          </div>
+          <div class="queue-list">
+            <!-- Canción actual -->
+            <div class="queue-item current">
+              <span class="queue-num">▶</span>
+              ${thumb ? `<img class="queue-thumb" src="${thumb}" alt="">` : `<div class="queue-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎵</div>`}
+              <div class="queue-info">
+                <div class="queue-name">${track?.title || 'Sin título'}</div>
+                <div class="queue-artist">${track?.author || ''}</div>
+              </div>
+              <span class="now-badge">NOW</span>
+            </div>
+            <!-- Queue -->
+            ${(data.queue || []).map((t, i) => `
+              <div class="queue-item">
+                <span class="queue-num">${i + 1}</span>
+                ${t.thumbnail
+                  ? `<img class="queue-thumb" src="${t.thumbnail}" alt="" onerror="this.style.display='none'">`
+                  : `<div class="queue-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--muted)">🎵</div>`}
+                <div class="queue-info">
+                  <div class="queue-name">${t.title || 'Sin título'}</div>
+                  <div class="queue-artist">${t.author || ''}</div>
+                </div>
+                <span class="queue-dur">${t.isStream ? '🔴' : fmtTime(t.duration)}</span>
+              </div>`).join('')}
+            ${!data.queue?.length ? `<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem">La cola está vacía.</div>` : ''}
+          </div>
+        </div>`;
+    }
 
-    <div class="footer">
-        Conectado a <strong id="guildName">Servidor</strong> • Bot en vivo
-    </div>
+    function updateProgress() {
+      const fill  = document.getElementById('progress-fill');
+      const label = document.getElementById('pos-label');
+      if (!fill || !label) return;
+      const pct = duration ? Math.min((position / duration) * 100, 100) : 0;
+      fill.style.width  = pct + '%';
+      label.textContent = fmtTime(position);
+    }
 
-    <script>
-        const BOT_API = 'http://51.83.6.5:20046';
-        let currentGuildId = null;
-        let isPlaying = false;
+    async function togglePlay() {
+      await playerAction('pause');
+    }
 
-        // Obtener guildId del dashboard (puedes cambiarlo manualmente por ahora)
-        function getGuildId() {
-            // Por ahora usamos un guildId de ejemplo. Después lo tomaremos del login/dashboard
-            return prompt("Ingresa el ID del servidor donde está sonando música:", "123456789012345678");
-        }
-
-        async function loadPlayer() {
-            currentGuildId = currentGuildId || getGuildId();
-            if (!currentGuildId) return;
-
-            try {
-                const res = await fetch(`${BOT_API}/player/${currentGuildId}`);
-                if (!res.ok) throw new Error("No hay música");
-                const data = await res.json();
-
-                // Actualizar UI
-                document.getElementById('songTitle').textContent = data.currentTrack ? data.currentTrack.title : 'Nada reproduciendo';
-                document.getElementById('songArtist').textContent = data.currentTrack ? data.currentTrack.author : '—';
-                document.getElementById('albumArt').src = data.currentTrack ? data.currentTrack.thumbnail : 'https://via.placeholder.com/320/1a0033/00ffcc?text=No+Music';
-
-                isPlaying = data.isPlaying;
-
-                const playBtn = document.getElementById('playPauseBtn');
-                playBtn.className = isPlaying ? 'fas fa-pause-circle play-pause' : 'fas fa-play-circle play-pause';
-
-                // Queue
-                const queueContainer = document.getElementById('queueList');
-                queueContainer.innerHTML = '';
-                data.queue.forEach(track => {
-                    const div = document.createElement('div');
-                    div.className = 'queue-item';
-                    div.innerHTML = `<strong>${track.title}</strong><br><small>${track.author}</small>`;
-                    queueContainer.appendChild(div);
-                });
-
-            } catch (e) {
-                console.log("No hay player activo");
-            }
-        }
-
-        // Controles
-        document.getElementById('playPauseBtn').addEventListener('click', async () => {
-            if (!currentGuildId) return;
-            await fetch(`${BOT_API}/player/${currentGuildId}/pause`, { method: 'POST' });
-            loadPlayer();
+    async function playerAction(action, body = {}) {
+      try {
+        const res = await apiFetch(`/api/player/${currentGuildId}/${action}`, {
+          method: 'POST', body: JSON.stringify(body),
         });
+        setTimeout(loadPlayer, 300);
+      } catch { /* silencioso */ }
+    }
 
-        document.getElementById('nextBtn').addEventListener('click', async () => {
-            if (!currentGuildId) return;
-            await fetch(`${BOT_API}/player/${currentGuildId}/skip`, { method: 'POST' });
-            loadPlayer();
-        });
+    let volumeTimer = null;
+    function setVolume(val) {
+      document.getElementById('vol-val').textContent = val;
+      clearTimeout(volumeTimer);
+      volumeTimer = setTimeout(() => playerAction('volume', { volume: parseInt(val) }), 400);
+    }
 
-        // Actualizar cada 4 segundos
-        setInterval(loadPlayer, 4000);
-        loadPlayer(); // Primera carga
-    </script>
+    function seekTo(e, bar) {
+      const rect = bar.getBoundingClientRect();
+      const pct  = (e.clientX - rect.left) / rect.width;
+      // poru no soporta seek directo fácilmente, por ahora solo update visual
+      position = Math.floor(pct * duration);
+      updateProgress();
+    }
+
+    loadGuilds();
+  </script>
 </body>
 </html>
