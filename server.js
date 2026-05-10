@@ -333,23 +333,56 @@ app.delete('/api/guilds/:guildId/notify/x/:id', authMiddleware, async (req, res)
 });
 
 // ──────────────────────────────────────────────
-// API - STATS (para la landing)
+// API - STATUS COMPLETO
 // ──────────────────────────────────────────────
-app.get('/api/stats', async (req, res) => {
+const BOT_STATUS_URL = process.env.BOT_STATUS_URL || 'http://51.83.6.5:20046/status';
+
+async function fetchBotStatus() {
   try {
-    const botRes  = await fetch(`${DISCORD_API}/users/@me/guilds`, {
-      headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-    });
-    const botGuilds = await botRes.json();
-    res.json({
-      servers:  botGuilds.length || 0,
-      users:    0, // requiere sharding para calcularlo
-      commands: 80,
-      ping:     Date.now() % 100 + 30,
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(BOT_STATUS_URL, { signal: controller.signal });
+    clearTimeout(timeout);
+    return await res.json();
   } catch {
-    res.json({ servers: 0, users: 0, commands: 80, ping: 0 });
+    return null;
   }
+}
+
+app.get('/api/status', async (req, res) => {
+  const botData = await fetchBotStatus();
+
+  const site = { online: true, latency: null };
+  const siteStart = Date.now();
+  site.latency = Date.now() - siteStart;
+
+  res.json({
+    site: {
+      online:  true,
+      latency: site.latency,
+    },
+    bot: botData ? {
+      online:  botData.bot.online,
+      ping:    botData.bot.ping,
+      uptime:  botData.bot.uptime,
+      guilds:  botData.bot.guilds,
+      users:   botData.bot.users,
+    } : { online: false, ping: null, uptime: null, guilds: null, users: null },
+    lavalink: botData ? botData.lavalink : { nodes: [], totalNodes: 0, connectedNodes: 0 },
+    database: botData ? botData.database : { online: false, status: 'unknown' },
+    timestamp: Date.now(),
+  });
+});
+
+// API - STATS (para la landing)
+app.get('/api/stats', async (req, res) => {
+  const botData = await fetchBotStatus();
+  res.json({
+    servers:  botData?.bot?.guilds  || 0,
+    users:    botData?.bot?.users   || 0,
+    commands: 80,
+    ping:     botData?.bot?.ping    || 0,
+  });
 });
 
 // ──────────────────────────────────────────────
