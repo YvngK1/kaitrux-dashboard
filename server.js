@@ -217,6 +217,27 @@ app.post('/api/guilds/:guildId/config', authMiddleware, async (req, res) => {
 });
 
 // ──────────────────────────────────────────────
+// API - DISCORD USER LOOKUP
+// ──────────────────────────────────────────────
+app.get('/api/user/:userId', authMiddleware, async (req, res) => {
+  try {
+    const r = await fetch(`${DISCORD_API}/users/${req.params.userId}`, {
+      headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
+    });
+    if (!r.ok) return res.json({ id: req.params.userId, username: 'Usuario desconocido', avatar: null });
+    const user = await r.json();
+    res.json({
+      id: user.id,
+      username: user.username,
+      globalName: user.global_name || user.username,
+      avatar: user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.id) % 5}.png`,
+    });
+  } catch {
+    res.json({ id: req.params.userId, username: 'Usuario desconocido', avatar: null });
+  }
+});
+
+// ──────────────────────────────────────────────
 // API - WARNS
 // ──────────────────────────────────────────────
 app.get('/api/guilds/:guildId/warns', authMiddleware, async (req, res) => {
