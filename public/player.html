@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaitrux • Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        :root { --neon: #00ffcc; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a0033);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 15px 30px;
+            background: rgba(0,0,0,0.7);
+            border-bottom: 1px solid rgba(0,255,204,0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header h1 { font-size: 24px; }
+        .player {
+            flex: 1;
+            display: flex;
+            padding: 30px;
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .now-playing {
+            flex: 1;
+            text-align: center;
+        }
+        .album-art {
+            width: 320px;
+            height: 320px;
+            border-radius: 12px;
+            box-shadow: 0 0 60px rgba(0,255,204,0.4);
+            object-fit: cover;
+            border: 4px solid var(--neon);
+        }
+        .song-info {
+            margin-top: 25px;
+        }
+        .song-title { font-size: 28px; font-weight: 600; }
+        .song-artist { font-size: 18px; opacity: 0.8; margin-top: 5px; }
+        .progress-container {
+            margin: 30px 0;
+        }
+        .progress {
+            height: 6px;
+            background: #333;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--neon);
+            border-radius: 9999px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            font-size: 32px;
+            margin: 15px 0;
+        }
+        .controls i { cursor: pointer; transition: all 0.2s; }
+        .controls i:hover { color: var(--neon); transform: scale(1.1); }
+        .play-pause { font-size: 48px; color: var(--neon); }
+        .queue {
+            width: 380px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .queue h3 { margin-bottom: 15px; color: var(--neon); }
+        .queue-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+        }
+        .queue-item:hover { background: rgba(0,255,204,0.1); }
+        .footer {
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <i class="fas fa-music" style="color:#00ffcc; font-size:28px;"></i>
+        <h1>Kaitrux Music</h1>
+    </div>
+
+    <div class="player">
+        <!-- Now Playing -->
+        <div class="now-playing">
+            <img id="albumArt" class="album-art" src="https://via.placeholder.com/320" alt="Album Art">
+            <div class="song-info">
+                <div id="songTitle" class="song-title">Cargando canción...</div>
+                <div id="songArtist" class="song-artist">—</div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress" id="progressBar">
+                    <div class="progress-bar" id="progress"></div>
+                </div>
+                <div class="time">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <i class="fas fa-step-backward" id="prevBtn"></i>
+                <i class="fas fa-play-circle play-pause" id="playPauseBtn"></i>
+                <i class="fas fa-step-forward" id="nextBtn"></i>
+            </div>
+        </div>
+
+        <!-- Queue -->
+        <div class="queue">
+            <h3><i class="fas fa-list"></i> Cola de reproducción</h3>
+            <div id="queueList"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Conectado a <strong id="guildName">Servidor</strong> • Bot en vivo
+    </div>
+
+    <script>
+        const BOT_API = 'http://51.83.6.5:20046';
+        let currentGuildId = null;
+        let isPlaying = false;
+
+        // Obtener guildId del dashboard (puedes cambiarlo manualmente por ahora)
+        function getGuildId() {
+            // Por ahora usamos un guildId de ejemplo. Después lo tomaremos del login/dashboard
+            return prompt("Ingresa el ID del servidor donde está sonando música:", "123456789012345678");
+        }
+
+        async function loadPlayer() {
+            currentGuildId = currentGuildId || getGuildId();
+            if (!currentGuildId) return;
+
+            try {
+                const res = await fetch(`${BOT_API}/player/${currentGuildId}`);
+                if (!res.ok) throw new Error("No hay música");
+                const data = await res.json();
+
+                // Actualizar UI
+                document.getElementById('songTitle').textContent = data.currentTrack ? data.currentTrack.title : 'Nada reproduciendo';
+                document.getElementById('songArtist').textContent = data.currentTrack ? data.currentTrack.author : '—';
+                document.getElementById('albumArt').src = data.currentTrack ? data.currentTrack.thumbnail : 'https://via.placeholder.com/320/1a0033/00ffcc?text=No+Music';
+
+                isPlaying = data.isPlaying;
+
+                const playBtn = document.getElementById('playPauseBtn');
+                playBtn.className = isPlaying ? 'fas fa-pause-circle play-pause' : 'fas fa-play-circle play-pause';
+
+                // Queue
+                const queueContainer = document.getElementById('queueList');
+                queueContainer.innerHTML = '';
+                data.queue.forEach(track => {
+                    const div = document.createElement('div');
+                    div.className = 'queue-item';
+                    div.innerHTML = `<strong>${track.title}</strong><br><small>${track.author}</small>`;
+                    queueContainer.appendChild(div);
+                });
+
+            } catch (e) {
+                console.log("No hay player activo");
+            }
+        }
+
+        // Controles
+        document.getElementById('playPauseBtn').addEventListener('click', async () => {
+            if (!currentGuildId) return;
+            await fetch(`${BOT_API}/player/${currentGuildId}/pause`, { method: 'POST' });
+            loadPlayer();
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', async () => {
+            if (!currentGuildId) return;
+            await fetch(`${BOT_API}/player/${currentGuildId}/skip`, { method: 'POST' });
+            loadPlayer();
+        });
+
+        // Actualizar cada 4 segundos
+        setInterval(loadPlayer, 4000);
+        loadPlayer(); // Primera carga
+    </script>
+</body>
+</html>
