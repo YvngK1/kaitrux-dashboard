@@ -426,12 +426,53 @@ app.get('/api/stats', async (req, res) => {
 // ──────────────────────────────────────────────
 // FALLBACK - servir HTML
 // ──────────────────────────────────────────────
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+
+// Rutas limpias sin .html
+const HTML_ROUTES = {
+  '/dashboard': 'dashboard.html',
+  '/server': 'server.html',
+  '/status': 'status.html',
+  '/commands': 'commands.html',
+};
+
+Object.entries(HTML_ROUTES).forEach(([route, file]) => {
+  app.get(route, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', file));
+  });
+});
+
+// PLAYER
+app.get('/player', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'player.html'));
+});
+
+// /player/:guildId → sirve player.html también
+app.get('/player/:guildId', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'player.html'));
+});
+
+// Compatibilidad con links viejos
+// /dashboard.html?token=... → /dashboard?token=...
+app.get('/dashboard.html', (req, res) => {
+  const qs = req.url.includes('?')
+    ? req.url.slice(req.url.indexOf('?'))
+    : '';
+
+  res.redirect(301, `/dashboard${qs}`);
+});
+
+// FALLBACK → 404 real
+app.use((req, res) => {
+  res.status(404).sendFile(
+    path.join(__dirname, 'public', '404.html')
+  );
 });
 
 // ──────────────────────────────────────────────
 // START
 // ──────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Dashboard corriendo en puerto ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Dashboard corriendo en puerto ${PORT}`);
+});
