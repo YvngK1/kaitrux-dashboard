@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comandos — Kaitrux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --surface2: #141424;
+    --border: rgba(255,255,255,0.07);
+    --accent: #5865F2;
+    --accent2: #eb459e;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --glow: rgba(88,101,242,0.35);
+    --success: #57f287;
+    --danger: #ed4245;
+    --warning: #fee75c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--glow);
+  }
+
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+  .nav-btn {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 0 0 rgba(88,101,242,0);
+  }
+  .nav-btn:hover {
+    background: #4752c4;
+    box-shadow: 0 0 16px var(--glow);
+    transform: translateY(-1px);
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 4rem 2rem 2rem;
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--text) 0%, var(--muted) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    max-width: 480px;
+    margin: 0 auto 1rem;
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+  }
+
+  #search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px 12px 42px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--muted); }
+
+  /* MAIN */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+  }
+
+  .prefix-note {
+    background: rgba(88,101,242,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .prefix-note strong { color: var(--text); }
+
+  /* CATS */
+  .cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .cat-btn {
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cat-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+  .cat-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* COUNT */
+  .count { font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem; }
+
+  /* SECTION */
+  .section { margin-bottom: 2.5rem; }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+  }
+
+  .cmd-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .cmd-card:hover {
+    border-color: rgba(88,101,242,0.35);
+    transform: translateY(-1px);
+  }
+
+  .cmd-icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+
+  .cmd-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+    font-family: 'DM Mono', 'Fira Code', monospace;
+  }
+
+  .cmd-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 4rem 0;
+    color: var(--muted);
+    font-size: 1rem;
+  }
+
+  .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  @media (max-width: 600px) {
+    nav { padding: 1rem; }
+    .header { padding: 2.5rem 1rem 1.5rem; }
+    .container { padding: 0 1rem 3rem; }
+    .cmd-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="logo-dot"></div>
+    Kaitrux
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="commands.html" class="active">Comandos</a>
+    <a href="status.html">Status</a>
+    <a href="/api/auth/login" class="nav-btn">Dashboard</a>
+  </div>
+</nav>
+
+<div class="header">
+  <h1>Comandos</h1>
+  <p>Todos los comandos disponibles de Kaitrux</p>
+  <div class="search-wrap">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="Buscar comando..." oninput="render()">
+  </div>
+</div>
+
+<div class="container">
+  <div class="prefix-note">
+    El prefijo por defecto es <strong>!</strong> — podés cambiarlo desde el <a href="/api/auth/login" style="color:var(--accent)">dashboard</a>.
+  </div>
+
+  <div class="cats" id="cats"></div>
+  <div class="count" id="count"></div>
+  <div id="output"></div>
+</div>
+
+<script>
+const CATS = {
+  "Moderación": {
+    emoji: "🛡️", color: "#ed4245", bg: "rgba(237,66,69,0.12)",
+    cmds: [
+      ["ban","Banea a un usuario del servidor"],
+      ["unban","Desbanea a un usuario"],
+      ["kick","Expulsa a un usuario"],
+      ["mute","Silencia a un usuario"],
+      ["unmute","Quita el silencio a un usuario"],
+      ["warn","Advierte a un usuario"],
+      ["unwarn","Elimina una advertencia"],
+      ["clearallwarns","Borra todas las advertencias de un usuario"],
+      ["findwarn","Busca advertencias de un usuario"],
+      ["findban","Busca si un usuario está baneado"],
+      ["blacklist","Agrega un usuario a la lista negra"],
+      ["unblacklist","Saca a un usuario de la lista negra"],
+      ["block","Bloquea un canal o rol"],
+      ["unblock","Desbloquea un canal o rol"],
+      ["blockuser","Bloquea a un usuario específico"],
+      ["listblock","Lista todos los bloqueos activos"],
+      ["massroleadd","Añade un rol a múltiples usuarios"],
+      ["massroledel","Elimina un rol de múltiples usuarios"],
+      ["banmap","Muestra el mapa de bans del servidor"],
+    ]
+  },
+  "Música": {
+    emoji: "🎵", color: "#57f287", bg: "rgba(87,242,135,0.1)",
+    cmds: [
+      ["play","Reproduce una canción o lista"],
+      ["pause","Pausa la reproducción"],
+      ["resume","Reanuda la reproducción"],
+      ["skip","Salta a la siguiente canción"],
+      ["queue","Muestra la cola de reproducción"],
+      ["volume","Ajusta el volumen"],
+      ["shuffle","Mezcla la cola aleatoriamente"],
+      ["autoplay","Activa/desactiva el autoplay"],
+      ["lyrics","Muestra la letra de la canción actual"],
+      ["panelmusic","Abre el panel de control de música"],
+    ]
+  },
+  "Efectos": {
+    emoji: "🎚️", color: "#fee75c", bg: "rgba(254,231,92,0.1)",
+    cmds: [
+      ["bassboost","Activa el filtro bass boost"],
+      ["nightcore","Activa el filtro nightcore"],
+      ["slowed","Activa el filtro slowed + reverb"],
+      ["clear","Quita todos los efectos de audio"],
+    ]
+  },
+  "Admin": {
+    emoji: "⚙️", color: "#5865F2", bg: "rgba(88,101,242,0.12)",
+    cmds: [
+      ["setlogs","Configura los canales de logs"],
+      ["setup-automod","Configura el automod del servidor"],
+      ["embed","Crea un embed personalizado"],
+      ["setprefix","Cambia el prefijo del bot"],
+    ]
+  },
+  "Notificaciones": {
+    emoji: "🔔", color: "#eb459e", bg: "rgba(235,69,158,0.1)",
+    cmds: [
+      ["settwitch","Configura notificaciones de Twitch"],
+      ["setyoutube","Configura notificaciones de YouTube"],
+      ["setkick","Configura notificaciones de Kick"],
+      ["settiktok","Configura notificaciones de TikTok"],
+      ["xset","Configura notificaciones de X/Twitter"],
+      ["removeyoutube","Elimina notificación de YouTube"],
+      ["removekick","Elimina notificación de Kick"],
+      ["testnotify","Prueba una notificación"],
+    ]
+  },
+  "Perfil": {
+    emoji: "👤", color: "#eb459e", bg: "rgba(235,69,158,0.1)",
+    cmds: [
+      ["profile","Muestra tu perfil"],
+      ["marry","Propone matrimonio a un usuario"],
+      ["divorciar","Se divorcia de tu pareja"],
+      ["aceptar","Acepta una propuesta de matrimonio"],
+      ["rechazar","Rechaza una propuesta de matrimonio"],
+      ["setphrase","Establece tu frase de perfil"],
+    ]
+  },
+  "RPG": {
+    emoji: "⚔️", color: "#fee75c", bg: "rgba(254,231,92,0.1)",
+    cmds: [
+      ["pj","Crea o muestra tu personaje"],
+      ["health","Muestra tu salud actual"],
+      ["needs","Muestra tus necesidades"],
+      ["inv","Muestra tu inventario"],
+      ["shop","Muestra la tienda"],
+      ["buy","Compra un item"],
+      ["use","Usa un item del inventario"],
+      ["work","Trabaja para ganar monedas"],
+      ["job","Muestra o cambia tu trabajo"],
+      ["pet","Interactúa con tu mascota"],
+      ["pjstyle","Cambia el estilo de tu personaje"],
+      ["respawn","Respawnea tu personaje"],
+    ]
+  },
+  "Interacción": {
+    emoji: "💞", color: "#ed4245", bg: "rgba(237,66,69,0.1)",
+    cmds: [
+      ["hug","Abraza a un usuario"],
+      ["kiss","Besa a un usuario"],
+      ["slap","Le da una cachetada a alguien"],
+      ["poke","Pincha a un usuario"],
+      ["cuddle","Se acurruca con alguien"],
+      ["bite","Muerde a un usuario"],
+      ["wave","Le hace un saludo a alguien"],
+      ["wink","Le guiña el ojo a alguien"],
+      ["tickle","Hace cosquillas a alguien"],
+      ["fight","Pelea con un usuario"],
+      ["feed","Le da de comer a alguien"],
+      ["handhold","Toma la mano de alguien"],
+      ["handshake","Da la mano a alguien"],
+      ["kickbutt","Le pega una patada a alguien"],
+      ["bloodsuck","Chupa la sangre de alguien"],
+      ["peck","Le da un besito a alguien"],
+      ["kisscheek","Le da un beso en la mejilla"],
+      ["ship","Shippea a dos usuarios"],
+      ["sleept","Duerme con alguien"],
+    ]
+  },
+  "Acciones": {
+    emoji: "😄", color: "#57f287", bg: "rgba(87,242,135,0.1)",
+    cmds: [
+      ["angry","Muestra una acción enojado"],["baka","Reacciona con un baka"],
+      ["clap","Aplaude"],["dance","Baila"],["think","Piensa"],["smile","Sonríe"],
+      ["nod","Asiente"],["nope","Niega con la cabeza"],["nya","Reacciona con nya~"],
+      ["run","Corre"],["salute","Saluda militarmente"],["sing","Canta"],
+      ["shower","Se ducha"],["sipcoffe","Toma un sorbo de café"],
+      ["sipjuice","Toma un sorbo de jugo"],["sleepsolo","Se queda dormido"],
+      ["smoke","Fuma"],["thumbup","Pone el pulgar arriba"],["lurk","Modo lurk"],
+      ["facedesk","Se da la cabeza contra el escritorio"],
+      ["cooking","Cocina algo"],["drink","Toma algo"],
+    ]
+  },
+  "Reacciones": {
+    emoji: "😭", color: "#fee75c", bg: "rgba(254,231,92,0.1)",
+    cmds: [
+      ["blush","Se ruboriza"],["bored","Muestra aburrimiento"],
+      ["cringe","Reacciona con cringe"],["cry","Llora"],
+      ["facepalm","Se hace un facepalm"],["happy","Muestra alegría"],
+      ["love","Muestra amor"],["panic","Entra en pánico"],
+      ["pout","Hace un pout"],["scare","Se asusta"],
+      ["shrug","Se encoge de hombros"],["yawn","Bosteza"],
+    ]
+  },
+  "Diversión": {
+    emoji: "🎉", color: "#5865F2", bg: "rgba(88,101,242,0.12)",
+    cmds: [
+      ["joke","Cuenta un chiste"],["meme","Muestra un meme aleatorio"],
+      ["gay","Calcula el % gay de un usuario"],["quote","Cita aleatoria"],
+      ["shitpost","Muestra un shitpost"],["whowouldwin","Enfrenta dos opciones"],
+      ["petpet","GIF petpet de alguien"],["image","Busca una imagen"],
+    ]
+  },
+  "Juegos": {
+    emoji: "🎮", color: "#eb459e", bg: "rgba(235,69,158,0.1)",
+    cmds: [
+      ["8ball","Pregunta a la bola 8"],
+      ["tictactoe","Juega al ta-te-ti"],
+      ["snake","Juega a la serpiente"],
+      ["unscramble","Palabras desordenadas"],
+    ]
+  },
+  "Misc": {
+    emoji: "✨", color: "#57f287", bg: "rgba(87,242,135,0.1)",
+    cmds: [
+      ["avatar","Muestra el avatar de un usuario"],
+      ["imagine","Genera una imagen con IA"],
+      ["ask","Pregunta algo"],
+      ["rep","Da reputación a un usuario"],
+      ["repinfo","Muestra tu reputación"],
+      ["toprep","Top de reputación del servidor"],
+      ["addresponse","Agrega una auto-respuesta"],
+      ["removeresponse","Elimina una auto-respuesta"],
+      ["autoresponselist","Lista las auto-respuestas"],
+    ]
+  },
+  "Info": {
+    emoji: "ℹ️", color: "#5865F2", bg: "rgba(88,101,242,0.12)",
+    cmds: [
+      ["ping","Muestra el ping del bot"],
+      ["userinfo","Información de un usuario"],
+      ["serverinfo","Información del servidor"],
+      ["botstats","Estadísticas del bot"],
+      ["banner","Muestra el banner de un usuario"],
+      ["spotify","Muestra lo que escucha alguien en Spotify"],
+      ["loltracker","Trackea una cuenta de LoL"],
+      ["help","Muestra la lista de comandos"],
+      ["tos","Términos de servicio"],
+      ["findbug","Reporta un bug"],
+      ["pp","...ya sabés 😅"],
+    ]
+  },
+  "Tickets": {
+    emoji: "🎫", color: "#fee75c", bg: "rgba(254,231,92,0.1)",
+    cmds: [
+      ["ticketsetup","Configura el sistema de tickets"],
+      ["claim","Reclama un ticket"],
+      ["unclaim","Suelta un ticket"],
+      ["close","Cierra un ticket"],
+      ["add","Añade a alguien al ticket"],
+      ["editticket","Edita la configuración del ticket"],
+    ]
+  },
+  "Premium": {
+    emoji: "👑", color: "#fee75c", bg: "rgba(254,231,92,0.1)",
+    cmds: [
+      ["premium","Muestra tu estado premium"],
+      ["redeempremium","Canjea una key premium"],
+      ["blacklistword","(Premium) Añade palabras al filtro de palabras"],
+    ]
+  },
+};
+
+const catKeys = Object.keys(CATS);
+let activecat = "all";
+
+function buildCats() {
+  const el = document.getElementById("cats");
+  let html = `<button class="cat-btn active" onclick="setcat('all',this)">Todos</button>`;
+  catKeys.forEach(k => {
+    const c = CATS[k];
+    html += `<button class="cat-btn" onclick="setcat('${k}',this)">${c.emoji} ${k}</button>`;
+  });
+  el.innerHTML = html;
+}
+
+function setcat(cat, btn) {
+  activecat = cat;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+function render() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const out = document.getElementById("output");
+  const cntEl = document.getElementById("count");
+  let total = 0;
+  let html = "";
+
+  const catsToShow = activecat === "all" ? catKeys : [activecat];
+
+  catsToShow.forEach(k => {
+    const c = CATS[k];
+    const filtered = c.cmds.filter(([name, desc]) =>
+      name.includes(q) || desc.toLowerCase().includes(q)
+    );
+    if (!filtered.length) return;
+    total += filtered.length;
+
+    html += `<div class="section">
+      <div class="section-title">${c.emoji}&nbsp; ${k}</div>
+      <div class="cmd-grid">`;
+    filtered.forEach(([name, desc]) => {
+      html += `<div class="cmd-card">
+        <div class="cmd-icon" style="background:${c.bg};color:${c.color}">${c.emoji}</div>
+        <div>
+          <div class="cmd-name">!${name}</div>
+          <div class="cmd-desc">${desc}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  if (!total) {
+    html = `<div class="empty"><div class="empty-icon">🔍</div>No se encontraron comandos para "<strong>${q}</strong>"</div>`;
+  }
+
+  cntEl.textContent = total + " comando" + (total !== 1 ? "s" : "");
+  out.innerHTML = html;
+}
+
+buildCats();
+render();
+</script>
+</body>
+</html>
