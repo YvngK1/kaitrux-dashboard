@@ -1,298 +1,93 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Status — Kaitrux</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #080810; --surface: #0f0f1a; --surface2: #141424;
-      --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
-      --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
-      --success: #57f287; --danger: #ed4245; --warning: #fee75c;
-    }
-    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
-    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
-    nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(8,8,16,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .nav-links { display: flex; gap: 1rem; align-items: center; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--text); }
-    main { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 3rem 2rem 6rem; }
-    .page-header { margin-bottom: 2.5rem; }
-    .page-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.3rem; }
-    .page-sub { color: var(--muted); font-size: 0.9rem; display: flex; align-items: center; gap: 0.75rem; }
-    .last-updated { font-size: 0.8rem; color: var(--muted); }
+// PrefixCommands/info/status.js
+const { EmbedBuilder } = require('discord.js');
+const os = require('os');
 
-    /* OVERALL BANNER */
-    .overall-banner { border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; border: 1px solid; animation: fadeUp 0.3s ease; }
-    .overall-banner.ok  { background: rgba(87,242,135,0.06); border-color: rgba(87,242,135,0.2); }
-    .overall-banner.bad { background: rgba(237,66,69,0.06);  border-color: rgba(237,66,69,0.2); }
-    .overall-banner.warn { background: rgba(254,231,92,0.06); border-color: rgba(254,231,92,0.2); }
-    .banner-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .banner-dot.ok   { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-    .banner-dot.bad  { background: var(--danger);  box-shadow: 0 0 8px var(--danger); }
-    .banner-dot.warn { background: var(--warning); box-shadow: 0 0 8px var(--warning); animation: pulse 2s infinite; }
-    .banner-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+module.exports = {
+    name: 'status',
+    aliases: ['botstatus', 'ping', 'uptime'],
+    description: 'Muestra el estado del bot, base de datos y Lavalink.',
+    category: 'info',
 
-    /* STATUS CARDS */
-    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
-    .status-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; animation: fadeUp 0.4s ease both; transition: border-color 0.3s; }
-    .status-card.ok   { border-color: rgba(87,242,135,0.15); }
-    .status-card.bad  { border-color: rgba(237,66,69,0.15); }
-    .status-card.warn { border-color: rgba(254,231,92,0.15); }
-    .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-    .card-label { display: flex; align-items: center; gap: 0.6rem; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
-    .card-icon { font-size: 1.2rem; }
-    .status-pill { font-size: 0.72rem; padding: 0.2rem 0.7rem; border-radius: 100px; font-weight: 600; }
-    .pill-ok   { background: rgba(87,242,135,0.12);  color: var(--success); border: 1px solid rgba(87,242,135,0.25); }
-    .pill-bad  { background: rgba(237,66,69,0.12);   color: var(--danger);  border: 1px solid rgba(237,66,69,0.25); }
-    .pill-warn { background: rgba(254,231,92,0.12);  color: var(--warning); border: 1px solid rgba(254,231,92,0.25); }
-    .card-metrics { display: flex; flex-direction: column; gap: 0.5rem; }
-    .metric { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-    .metric-label { color: var(--muted); }
-    .metric-value { font-weight: 500; font-family: monospace; font-size: 0.88rem; }
+    run: async (client, message, args) => {
+        const mongoose = require('mongoose');
 
-    /* LAVALINK CARD */
-    .lavalink-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem; animation: fadeUp 0.4s ease both; }
-    .node-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.2rem; margin-top: 0.75rem; }
-    .node-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-    .node-name { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 0.5rem; }
-    .node-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .node-dot.ok  { background: var(--success); }
-    .node-dot.bad { background: var(--danger); }
-    .node-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
-    .node-metric { display: flex; flex-direction: column; gap: 0.2rem; }
-    .node-metric-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .node-metric-value { font-size: 0.92rem; font-weight: 600; font-family: monospace; }
+        // Medir latencia del mensaje
+        const sent = await message.channel.send('📡 Calculando...');
+        const apiPing = sent.createdTimestamp - message.createdTimestamp;
+        await sent.delete().catch(() => {});
 
-    /* PROGRESS BAR */
-    .progress-wrap { margin-top: 0.4rem; }
-    .progress-bar { height: 6px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin-top: 0.3rem; }
-    .progress-fill { height: 100%; border-radius: 100px; transition: width 0.5s ease; }
-    .progress-fill.ok   { background: var(--success); }
-    .progress-fill.warn { background: var(--warning); }
-    .progress-fill.bad  { background: var(--danger); }
-    .progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+        // Uptime formateado
+        const uptimeSecs  = Math.floor(process.uptime());
+        const d = Math.floor(uptimeSecs / 86400);
+        const h = Math.floor((uptimeSecs % 86400) / 3600);
+        const m = Math.floor((uptimeSecs % 3600) / 60);
+        const s = uptimeSecs % 60;
+        const uptimeStr = [d && `${d}d`, h && `${h}h`, m && `${m}m`, `${s}s`].filter(Boolean).join(' ');
 
-    .refresh-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-    .refresh-btn:hover { border-color: var(--accent); color: var(--text); }
-    .spinner-sm { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
+        // DB
+        const dbState = mongoose.connection.readyState;
+        const dbEmoji = dbState === 1 ? '🟢' : dbState === 2 ? '🟡' : '🔴';
+        const dbLabel = ['❌ Desconectado', '✅ Conectado', '🔄 Conectando', '⏳ Desconectando'][dbState] || '❓ Desconocido';
 
-    .loading { display: flex; align-items: center; gap: 0.75rem; padding: 4rem; color: var(--muted); justify-content: center; }
-    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        // Lavalink
+        let lavalinkStr = '❓ Desconocido';
+        if (client.poru && client.poru.nodes) {
+            const nodes = [];
+            client.poru.nodes.forEach((node, name) => {
+                const icon = node.isConnected ? '🟢' : '🔴';
+                const playing = node.stats?.playingPlayers ?? '?';
+                nodes.push(`${icon} \`${name}\` — ${playing} playing`);
+            });
+            lavalinkStr = nodes.length ? nodes.join('\n') : '⚪ Sin nodos';
+        }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-    @media(max-width:600px) { .status-grid { grid-template-columns: 1fr; } .node-metrics { grid-template-columns: 1fr 1fr; } }
-  </style>
-</head>
-<body>
-  <nav>
-    <div class="logo">Kaitrux</div>
-    <div class="nav-links">
-      <a href="/dashboard.html">← Dashboard</a>
-      <a href="/index.html">Inicio</a>
-      <button class="refresh-btn" onclick="loadStatus()" id="refresh-btn">🔄 Actualizar</button>
-    </div>
-  </nav>
+        // RAM
+        const usedMB  = Math.round((process.memoryUsage().heapUsed) / 1024 / 1024);
+        const totalMB = Math.round(os.totalmem() / 1024 / 1024);
 
-  <main>
-    <div class="page-header">
-      <div class="page-title">Estado del Sistema</div>
-      <div class="page-sub">
-        Monitoreo en tiempo real de todos los servicios.
-        <span class="last-updated" id="last-updated"></span>
-      </div>
-    </div>
+        // Servidores / usuarios
+        const guilds = client.guilds.cache.size;
+        const users  = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0);
 
-    <div id="content">
-      <div class="loading"><div class="spinner"></div><span>Cargando estado...</span></div>
-    </div>
-  </main>
+        const embed = new EmbedBuilder()
+            .setTitle('📊 Estado de Kaitrux')
+            .setColor(0x5865F2)
+            .setThumbnail(client.user.displayAvatarURL())
+            .addFields(
+                {
+                    name: '🤖 Bot',
+                    value: [
+                        `**Estado:** 🟢 Online`,
+                        `**Ping WS:** \`${client.ws.ping}ms\``,
+                        `**Ping API:** \`${apiPing}ms\``,
+                        `**Uptime:** \`${uptimeStr}\``,
+                    ].join('\n'),
+                    inline: true,
+                },
+                {
+                    name: '📊 Estadísticas',
+                    value: [
+                        `**Servidores:** \`${guilds}\``,
+                        `**Usuarios:** \`${users.toLocaleString()}\``,
+                        `**Comandos:** \`${client.commands.size}\``,
+                        `**RAM:** \`${usedMB}MB\``,
+                    ].join('\n'),
+                    inline: true,
+                },
+                {
+                    name: '🗄️ Base de datos',
+                    value: `${dbEmoji} ${dbLabel}`,
+                    inline: false,
+                },
+                {
+                    name: '🎵 Lavalink',
+                    value: lavalinkStr,
+                    inline: false,
+                },
+            )
+            .setFooter({ text: `Node.js ${process.version} • Kaitrux`, iconURL: client.user.displayAvatarURL() })
+            .setTimestamp();
 
-  <script>
-    const API = '';
-
-    function fmt(ms) {
-      if (ms === null || ms === undefined) return '—';
-      const s = Math.floor(ms / 1000);
-      const m = Math.floor(s / 60);
-      const h = Math.floor(m / 60);
-      const d = Math.floor(h / 24);
-      if (d > 0) return `${d}d ${h % 24}h`;
-      if (h > 0) return `${h}h ${m % 60}m`;
-      if (m > 0) return `${m}m ${s % 60}s`;
-      return `${s}s`;
-    }
-
-    function pillClass(online) { return online ? 'pill-ok' : 'pill-bad'; }
-    function pillText(online)  { return online ? '● Online' : '● Offline'; }
-    function cardClass(online) { return online ? 'ok' : 'bad'; }
-
-    function cpuClass(pct)  { return pct > 80 ? 'bad' : pct > 50 ? 'warn' : 'ok'; }
-    function memClass(used, total) {
-      const pct = (used / (used + total)) * 100;
-      return pct > 85 ? 'bad' : pct > 60 ? 'warn' : 'ok';
-    }
-
-    async function loadStatus() {
-      const btn = document.getElementById('refresh-btn');
-      btn.innerHTML = '<span class="spinner-sm"></span> Actualizando...';
-      btn.disabled = true;
-
-      try {
-        const res  = await fetch(`${API}/api/status`);
-        const data = await res.json();
-        renderStatus(data);
-      } catch {
-        document.getElementById('content').innerHTML = '<div class="loading"><span style="color:var(--danger)">Error al conectar con el servidor.</span></div>';
-      } finally {
-        btn.innerHTML = '🔄 Actualizar';
-        btn.disabled  = false;
-      }
-    }
-
-    function renderStatus(data) {
-      const { site, bot, lavalink, database } = data;
-
-      const allOk = site.online && bot.online && database.online && lavalink.connectedNodes > 0;
-      const anyBad = !bot.online || !database.online || lavalink.connectedNodes === 0;
-
-      const bannerClass = allOk ? 'ok' : anyBad ? 'bad' : 'warn';
-      const bannerText  = allOk
-        ? 'Todos los sistemas operativos'
-        : anyBad
-        ? 'Algunos servicios están caídos'
-        : 'Servicios con degradación parcial';
-
-      // Uptime del bot formateado
-      const uptimeStr = bot.uptime ? fmt(bot.uptime * 1000) : '—';
-
-      // Players lavalink
-      const node = lavalink.nodes[0] || null;
-      const playPct = node ? Math.round((node.playingPlayers / Math.max(node.players, 1)) * 100) : 0;
-      const cpuPct  = node?.cpu ?? 0;
-      const memUsed = node?.memory?.used ?? 0;
-      const memFree = node?.memory?.free ?? 0;
-      const memTotal = memUsed + memFree;
-      const memPct  = memTotal ? Math.round((memUsed / memTotal) * 100) : 0;
-
-      document.getElementById('last-updated').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
-
-      document.getElementById('content').innerHTML = `
-        <div class="overall-banner ${bannerClass}">
-          <div class="banner-dot ${bannerClass}"></div>
-          <div class="banner-text">${bannerText}</div>
-        </div>
-
-        <div class="status-grid">
-          <!-- SITE -->
-          <div class="status-card ${cardClass(site.online)}">
-            <div class="card-top">
-              <div class="card-label"><span class="card-icon">🌐</span> Sitio Web</div>
-              <span class="status-pill ${pillClass(site.online)}">${pillText(site.online)}</span>
-            </div>
-            <div class="card-metrics">
-              <div class="metric"><span class="metric-label">URL</span><span class="metric-value" style="font-family:sans-serif;font-size:0.78rem">railway.app</span></div>
-              <div class="metric"><span class="metric-label">Estado</span><span class="metric-value" style="color:var(--success)">Operativo</span></div>
-            </div>
-          </div>
-
-          <!-- BOT -->
-          <div class="status-card ${cardClass(bot.online)}">
-            <div class="card-top">
-              <div class="card-label"><span class="card-icon">🤖</span> Bot</div>
-              <span class="status-pill ${pillClass(bot.online)}">${pillText(bot.online)}</span>
-            </div>
-            <div class="card-metrics">
-              <div class="metric"><span class="metric-label">Ping</span><span class="metric-value" style="color:${bot.ping < 100 ? 'var(--success)' : bot.ping < 250 ? 'var(--warning)' : 'var(--danger)'}">${bot.ping ?? '—'}ms</span></div>
-              <div class="metric"><span class="metric-label">Uptime</span><span class="metric-value">${uptimeStr}</span></div>
-              <div class="metric"><span class="metric-label">Servidores</span><span class="metric-value">${bot.guilds?.toLocaleString() ?? '—'}</span></div>
-              <div class="metric"><span class="metric-label">Usuarios</span><span class="metric-value">${bot.users?.toLocaleString() ?? '—'}</span></div>
-            </div>
-          </div>
-
-          <!-- DATABASE -->
-          <div class="status-card ${cardClass(database.online)}">
-            <div class="card-top">
-              <div class="card-label"><span class="card-icon">🗄️</span> Base de Datos</div>
-              <span class="status-pill ${pillClass(database.online)}">${pillText(database.online)}</span>
-            </div>
-            <div class="card-metrics">
-              <div class="metric"><span class="metric-label">Proveedor</span><span class="metric-value">MongoDB Atlas</span></div>
-              <div class="metric"><span class="metric-label">Estado</span><span class="metric-value" style="color:${database.online ? 'var(--success)' : 'var(--danger)'}">${database.status}</span></div>
-            </div>
-          </div>
-
-          <!-- LAVALINK RESUMEN -->
-          <div class="status-card ${lavalink.connectedNodes > 0 ? 'ok' : 'bad'}">
-            <div class="card-top">
-              <div class="card-label"><span class="card-icon">🎵</span> Lavalink</div>
-              <span class="status-pill ${lavalink.connectedNodes > 0 ? 'pill-ok' : 'pill-bad'}">${lavalink.connectedNodes > 0 ? '● Online' : '● Offline'}</span>
-            </div>
-            <div class="card-metrics">
-              <div class="metric"><span class="metric-label">Nodos</span><span class="metric-value">${lavalink.connectedNodes}/${lavalink.totalNodes} conectados</span></div>
-              ${node ? `
-              <div class="metric"><span class="metric-label">Reproduciendo</span><span class="metric-value">${node.playingPlayers} / ${node.players}</span></div>
-              <div class="metric"><span class="metric-label">Uptime nodo</span><span class="metric-value">${fmt(node.uptime)}</span></div>
-              ` : ''}
-            </div>
-          </div>
-        </div>
-
-        ${node ? `
-        <!-- LAVALINK DETALLE -->
-        <div class="lavalink-card">
-          <div class="card-label" style="margin-bottom:0.5rem"><span class="card-icon">📊</span> <span style="font-family:'Syne',sans-serif;font-weight:700">Detalle del Nodo</span></div>
-          <div class="node-item">
-            <div class="node-header">
-              <div class="node-name">
-                <div class="node-dot ${node.connected ? 'ok' : 'bad'}"></div>
-                ${node.name}
-              </div>
-              <span class="status-pill ${node.connected ? 'pill-ok' : 'pill-bad'}">${node.connected ? '● Conectado' : '● Desconectado'}</span>
-            </div>
-
-            <!-- Players -->
-            <div class="progress-wrap" style="margin-bottom:1rem">
-              <div class="metric"><span class="metric-label">Players activos</span><span class="metric-value">${node.playingPlayers} / ${node.players}</span></div>
-              <div class="progress-bar"><div class="progress-fill ${playPct > 85 ? 'bad' : playPct > 60 ? 'warn' : 'ok'}" style="width:${Math.min(playPct,100)}%"></div></div>
-              <div class="progress-label"><span>0</span><span>${node.players}</span></div>
-            </div>
-
-            <div class="node-metrics">
-              <!-- CPU -->
-              <div class="node-metric">
-                <div class="node-metric-label">CPU</div>
-                <div class="node-metric-value" style="color:var(--${cpuClass(cpuPct) === 'ok' ? 'success' : cpuClass(cpuPct) === 'warn' ? 'warning' : 'danger'})">${cpuPct}%</div>
-                <div class="progress-bar" style="margin-top:0.4rem"><div class="progress-fill ${cpuClass(cpuPct)}" style="width:${cpuPct}%"></div></div>
-              </div>
-              <!-- RAM -->
-              <div class="node-metric">
-                <div class="node-metric-label">RAM</div>
-                <div class="node-metric-value">${memUsed}MB / ${memTotal}MB</div>
-                <div class="progress-bar" style="margin-top:0.4rem"><div class="progress-fill ${memClass(memUsed, memFree)}" style="width:${memPct}%"></div></div>
-              </div>
-              <!-- Uptime -->
-              <div class="node-metric">
-                <div class="node-metric-label">Uptime</div>
-                <div class="node-metric-value">${fmt(node.uptime)}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        ` : ''}
-      `;
-    }
-
-    loadStatus();
-    // Auto-refresh cada 30 segundos
-    setInterval(loadStatus, 30000);
-  </script>
-</body>
-</html>
+        message.channel.send({ embeds: [embed] });
+    },
+};
