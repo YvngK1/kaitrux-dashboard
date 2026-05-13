@@ -86,6 +86,7 @@ const XNotify = mongoose.model('XNotify', new mongoose.Schema({
   lastNotifiedAt: { type: Date,   default: null },
 }));
 
+
 // ──────────────────────────────────────────────
 // AUTH MIDDLEWARE
 // ──────────────────────────────────────────────
@@ -331,8 +332,6 @@ app.delete('/api/guilds/:guildId/notify/x/:id', authMiddleware, async (req, res)
   await XNotify.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
-
-// ──────────────────────────────────────────────
 
 // ──────────────────────────────────────────────
 // API - PLAYER DE MÚSICA
