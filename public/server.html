@@ -87,6 +87,27 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 600px) { .logs-grid, .notify-form-grid { grid-template-columns: 1fr; } }
+    /* ── SKELETON ── */
+    .sk { background: linear-gradient(90deg, var(--surface2) 25%, #1a1a2e 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; display: block; }
+    .sk-line { height: 12px; margin-bottom: 10px; }
+    .sk-line-lg { height: 14px; width: 60%; margin-bottom: 10px; }
+    .sk-line-full { height: 38px; width: 100%; margin-bottom: 8px; border-radius: 8px; }
+    .sk-item { height: 54px; width: 100%; margin-bottom: 10px; border-radius: 10px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    /* ── WELCOME ── */
+    textarea { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.92rem; outline: none; transition: border-color 0.2s; width: 100%; resize: vertical; min-height: 90px; }
+    textarea:focus { border-color: var(--accent); }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .toggle-label { font-size: 0.9rem; font-weight: 500; }
+    .toggle-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 24px; transition: 0.3s; }
+    .slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: 0.3s; }
+    input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+    input:checked + .slider::before { transform: translateX(20px); background: #fff; }
+    .vars-hint { background: rgba(88,101,242,0.06); border: 1px solid rgba(88,101,242,0.15); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--muted); line-height: 1.8; margin-top: 1rem; }
+    .vars-hint code { color: var(--accent); background: rgba(88,101,242,0.1); padding: 0.1rem 0.35rem; border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -107,6 +128,7 @@
       <button class="tab" onclick="switchTab(this,'warns')">⚠️ Warns</button>
       <button class="tab" onclick="switchTab(this,'logs')">📋 Logs</button>
       <button class="tab" onclick="switchTab(this,'notify')">🔔 Notificaciones</button>
+      <button class="tab" onclick="switchTab(this,'welcome')">👋 Bienvenida</button>
     </div>
 
     <!-- PREFIX -->
@@ -202,15 +224,80 @@
         </div>
       </div>
     </div>
+
+    <!-- WELCOME -->
+    <div class="panel" id="panel-welcome">
+      <!-- Welcome -->
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">👋</span><span class="card-title">Mensaje de bienvenida</span></div>
+        <div class="card-desc">Enviá un mensaje automático cuando alguien se une al servidor.</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Activar bienvenida</div><div class="toggle-sub">Envía un embed al canal configurado</div></div>
+          <label class="switch"><input type="checkbox" id="welcome-enabled"><span class="slider"></span></label>
+        </div>
+        <div class="input-group-full" style="margin-bottom:0.75rem">
+          <span class="input-label">Canal Discord (ID)</span>
+          <input type="text" id="welcome-channel" placeholder="ID del canal donde se manda">
+        </div>
+        <div class="input-group-full" style="margin-bottom:0.75rem">
+          <span class="input-label">Título del embed</span>
+          <input type="text" id="welcome-title" placeholder="¡Bienvenido/a a {server}!">
+        </div>
+        <div class="input-group-full" style="margin-bottom:0.75rem">
+          <span class="input-label">Descripción / Mensaje</span>
+          <textarea id="welcome-message" placeholder="Hola {user}, ¡nos alegra tenerte acá! Ya somos {count} miembros."></textarea>
+        </div>
+        <div class="input-group-full" style="margin-bottom:1rem">
+          <span class="input-label">Color del embed (hex)</span>
+          <input type="text" id="welcome-color" placeholder="#5865F2" style="max-width:160px">
+        </div>
+        <div class="vars-hint">
+          Variables disponibles: <code>{user}</code> mención, <code>{username}</code> nombre, <code>{server}</code> nombre del servidor, <code>{count}</code> cantidad de miembros
+        </div>
+        <div style="margin-top:1.2rem">
+          <button class="btn btn-primary" id="save-welcome" onclick="saveWelcome()">Guardar configuración</button>
+        </div>
+      </div>
+      <!-- Goodbye -->
+      <div class="config-card">
+        <div class="card-header"><span class="card-icon">🚪</span><span class="card-title">Mensaje de despedida</span></div>
+        <div class="card-desc">Enviá un mensaje cuando alguien abandona el servidor.</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Activar despedida</div><div class="toggle-sub">Envía un mensaje al canal configurado</div></div>
+          <label class="switch"><input type="checkbox" id="goodbye-enabled"><span class="slider"></span></label>
+        </div>
+        <div class="input-group-full" style="margin-bottom:0.75rem">
+          <span class="input-label">Canal Discord (ID)</span>
+          <input type="text" id="goodbye-channel" placeholder="ID del canal">
+        </div>
+        <div class="input-group-full" style="margin-bottom:1rem">
+          <span class="input-label">Mensaje de despedida</span>
+          <textarea id="goodbye-message" placeholder="{username} acaba de abandonar {server}. Ahora somos {count} miembros."></textarea>
+        </div>
+        <div style="margin-top:1.2rem">
+          <button class="btn btn-primary" id="save-goodbye" onclick="saveGoodbye()">Guardar configuración</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <div class="toast" id="toast"></div>
 
   <script>
     const API     = '';
-    const token   = sessionStorage.getItem('kaitrux_token');
     const guildId = new URLSearchParams(location.search).get('id');
-    if (!token || !guildId) location.href = '/dashboard.html';
+
+    // ── Sesión persistente 7 días ──
+    const SESSION_KEY  = 'kaitrux_token';
+    const SESSION_EXP  = 'kaitrux_token_exp';
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    function getToken() {
+      const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
+      if (Date.now() > exp) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); return null; }
+      return localStorage.getItem(SESSION_KEY);
+    }
+    const token = getToken();
+    if (!token || !guildId) location.href = '/dashboard';
 
     let warnsData = [];
     const logFields = [
@@ -229,7 +316,7 @@
         ...opts,
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
       });
-      if (res.status === 401) { sessionStorage.removeItem('kaitrux_token'); location.href = '/index.html'; }
+      if (res.status === 401) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); location.href = '/'; }
       return res.json();
     }
 
@@ -269,6 +356,7 @@
       loadWarns();
       loadLogs();
       ['twitch','kick','youtube','x'].forEach(loadNotify);
+      loadWelcome();
     }
 
     // PREFIX
@@ -458,6 +546,59 @@
         showToast('✓ Eliminada');
         loadNotify(platform);
       } catch { showToast('Error al eliminar.', 'error'); }
+    }
+
+    // WELCOME / GOODBYE
+    async function loadWelcome() {
+      try {
+        const data = await apiFetch(`/api/guilds/${guildId}/welcome`);
+        document.getElementById('welcome-enabled').checked   = data.welcome?.enabled  || false;
+        document.getElementById('welcome-channel').value     = data.welcome?.channel  || '';
+        document.getElementById('welcome-title').value       = data.welcome?.title    || '';
+        document.getElementById('welcome-message').value     = data.welcome?.message  || '';
+        document.getElementById('welcome-color').value       = data.welcome?.color    || '#5865F2';
+        document.getElementById('goodbye-enabled').checked   = data.goodbye?.enabled  || false;
+        document.getElementById('goodbye-channel').value     = data.goodbye?.channel  || '';
+        document.getElementById('goodbye-message').value     = data.goodbye?.message  || '';
+      } catch { /* silencioso */ }
+    }
+
+    async function saveWelcome() {
+      const btn = document.getElementById('save-welcome');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      const body = {
+        welcome: {
+          enabled: document.getElementById('welcome-enabled').checked,
+          channel: document.getElementById('welcome-channel').value.trim(),
+          title:   document.getElementById('welcome-title').value.trim(),
+          message: document.getElementById('welcome-message').value.trim(),
+          color:   document.getElementById('welcome-color').value.trim() || '#5865F2',
+        }
+      };
+      try {
+        const res = await apiFetch(`/api/guilds/${guildId}/welcome`, { method: 'POST', body: JSON.stringify(body) });
+        if (res.success) showToast('✓ Bienvenida guardada');
+        else showToast('Error al guardar.', 'error');
+      } catch { showToast('Error al guardar.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Guardar configuración'; }
+    }
+
+    async function saveGoodbye() {
+      const btn = document.getElementById('save-goodbye');
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      const body = {
+        goodbye: {
+          enabled: document.getElementById('goodbye-enabled').checked,
+          channel: document.getElementById('goodbye-channel').value.trim(),
+          message: document.getElementById('goodbye-message').value.trim(),
+        }
+      };
+      try {
+        const res = await apiFetch(`/api/guilds/${guildId}/welcome`, { method: 'POST', body: JSON.stringify(body) });
+        if (res.success) showToast('✓ Despedida guardada');
+        else showToast('Error al guardar.', 'error');
+      } catch { showToast('Error al guardar.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Guardar configuración'; }
     }
 
     init();
