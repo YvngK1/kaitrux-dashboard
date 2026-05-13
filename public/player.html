@@ -102,8 +102,27 @@
     @keyframes spin { to { transform:rotate(360deg); } }
     @keyframes float { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(1deg)} }
     @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes lyricsScroll { to { opacity:1; transform:translateY(0); } }
 
-    @media(max-width:768px) { main{grid-template-columns:1fr;} .queue-card{position:static;} }
+    /* LYRICS */
+    .lyrics-card { background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden;position:sticky;top:80px;max-height:620px;display:flex;flex-direction:column; }
+    .lyrics-header { padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
+    .lyrics-title { font-family:'Syne',sans-serif;font-weight:700;font-size:1rem; }
+    .lyrics-source { font-size:0.72rem;color:var(--muted); }
+    .lyrics-body { flex:1;overflow-y:auto;padding:1.5rem 1.2rem;scroll-behavior:smooth; }
+    .lyrics-body::-webkit-scrollbar { width:4px; }
+    .lyrics-body::-webkit-scrollbar-track { background:transparent; }
+    .lyrics-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:100px; }
+    .lyric-line { font-size:0.92rem;line-height:1.9;color:var(--muted);transition:all 0.35s ease;cursor:default;border-radius:6px;padding:0.1rem 0.5rem;margin:0 -0.5rem; }
+    .lyric-line.active { color:var(--text);font-size:1rem;font-weight:600;color:#fff;background:rgba(88,101,242,0.12);border-left:3px solid var(--accent);padding-left:0.75rem; }
+    .lyric-line.past { color:rgba(255,255,255,0.3); }
+    .lyrics-empty { display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:3rem 1.5rem;color:var(--muted);text-align:center;font-size:0.88rem; }
+    .lyrics-loading { display:flex;align-items:center;gap:0.6rem;padding:2rem;color:var(--muted);font-size:0.85rem; }
+    .lyrics-spinner { width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0; }
+    /* cuando hay letras, el grid tiene 3 columnas */
+    .has-lyrics { grid-template-columns:1fr 300px 300px !important; }
+
+    @media(max-width:900px) { main{grid-template-columns:1fr;} .queue-card,.lyrics-card{position:static;max-height:400px;} .has-lyrics{grid-template-columns:1fr !important;} }
   </style>
 </head>
 <body>
@@ -128,9 +147,16 @@
   </main>
 
   <script>
-    const API     = '';
-    const token   = sessionStorage.getItem('kaitrux_token');
-    if (!token) location.href = '/dashboard.html';
+    const API = '';
+    const SESSION_KEY  = 'kaitrux_token';
+    const SESSION_EXP  = 'kaitrux_token_exp';
+    function getToken() {
+      const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
+      if (Date.now() > exp) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); return null; }
+      return localStorage.getItem(SESSION_KEY);
+    }
+    const token = getToken();
+    if (!token) location.href = '/';
 
     let currentGuildId = null;
     let pollInterval   = null;
@@ -139,12 +165,19 @@
     let duration       = 0;
     let isPlaying      = false;
 
+    // ── LYRICS ──
+    let lyricsLines    = [];   // [{time, text}] sincronizadas
+    let plainLyrics    = '';   // texto plano si no hay LRC
+    let lyricsTrack    = '';   // título del track actual con letras cargadas
+    let lyricsTimer    = null;
+    let currentLineIdx = -1;
+
     async function apiFetch(path, opts = {}) {
       const res = await fetch(`${API}${path}`, {
         ...opts,
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
       });
-      if (res.status === 401) { sessionStorage.removeItem('kaitrux_token'); location.href = '/index.html'; }
+      if (res.status === 401) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); location.href = '/'; }
       return res.json();
     }
 
@@ -308,7 +341,21 @@
               </div>`).join('')}
             ${!data.queue?.length ? `<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem">La cola está vacía.</div>` : ''}
           </div>
+        </div>
+
+        <!-- LYRICS PANEL -->
+        <div class="lyrics-card" id="lyrics-card">
+          <div class="lyrics-header">
+            <span class="lyrics-title">🎶 Letras</span>
+            <span class="lyrics-source" id="lyrics-source"></span>
+          </div>
+          <div class="lyrics-body" id="lyrics-body">
+            <div class="lyrics-loading"><div class="lyrics-spinner"></div>Buscando letras...</div>
+          </div>
         </div>`;
+
+      // Cargar letras para el track actual
+      loadLyrics(track?.title || '', track?.author || '');
     }
 
     function updateProgress() {
@@ -349,6 +396,125 @@
     }
 
     loadGuilds();
+
+    // ───────────────────────────────────────────────────────────────────────
+    // LYRICS
+    // ───────────────────────────────────────────────────────────────────────
+    function parseLRC(lrc) {
+      // Parsea formato [mm:ss.xx] letra
+      const lines = [];
+      for (const line of lrc.split('\n')) {
+        const match = line.match(/^\[(\d{2}):(\d{2}\.\d+)\](.*)/);
+        if (match) {
+          const time = parseInt(match[1]) * 60 * 1000 + parseFloat(match[2]) * 1000;
+          const text = match[3].trim();
+          if (text) lines.push({ time, text });
+        }
+      }
+      return lines.sort((a, b) => a.time - b.time);
+    }
+
+    async function loadLyrics(title, artist) {
+      const key = `${title}|||${artist}`.toLowerCase();
+      if (key === lyricsTrack) return; // ya cargadas para esta canción
+      lyricsTrack    = key;
+      lyricsLines    = [];
+      plainLyrics    = '';
+      currentLineIdx = -1;
+      clearInterval(lyricsTimer);
+
+      const body = document.getElementById('lyrics-body');
+      const card = document.getElementById('lyrics-card');
+      const main = document.getElementById('main-content');
+      if (!body || !card) return;
+
+      body.innerHTML = '<div class="lyrics-loading"><div class="lyrics-spinner"></div>Buscando letras...</div>';
+
+      if (!title) {
+        body.innerHTML = '<div class="lyrics-empty">🎵<span>No hay canción reproduciéndose</span></div>';
+        return;
+      }
+
+      try {
+        const q = new URLSearchParams({ track_name: title, artist_name: artist });
+        const res = await fetch(`https://lrclib.net/api/get?${q}`);
+
+        if (!res.ok) throw new Error('not found');
+        const data = await res.json();
+
+        if (data.syncedLyrics) {
+          // Letras sincronizadas 🎉
+          lyricsLines = parseLRC(data.syncedLyrics);
+          document.getElementById('lyrics-source').textContent = 'sincronizadas';
+          main.classList.add('has-lyrics');
+          renderSyncedLyrics();
+          startLyricsTimer();
+        } else if (data.plainLyrics) {
+          // Letras planas
+          plainLyrics = data.plainLyrics;
+          document.getElementById('lyrics-source').textContent = 'sin sincronizar';
+          main.classList.add('has-lyrics');
+          body.innerHTML = plainLyrics.split('\n').map(l =>
+            l.trim() ? `<div class="lyric-line">${l}</div>`
+                     : `<div style="height:0.8rem"></div>`
+          ).join('');
+        } else {
+          throw new Error('no lyrics');
+        }
+      } catch {
+        document.getElementById('lyrics-source').textContent = '';
+        main.classList.remove('has-lyrics');
+        body.innerHTML = `<div class="lyrics-empty">
+          <span style="font-size:2rem">🎵</span>
+          <span>No se encontraron letras para esta canción</span>
+          <span style="font-size:0.78rem;color:var(--muted)">Funciona mejor con canciones en inglés o español conocidas</span>
+        </div>`;
+      }
+    }
+
+    function renderSyncedLyrics() {
+      const body = document.getElementById('lyrics-body');
+      if (!body || !lyricsLines.length) return;
+      body.innerHTML = lyricsLines.map((l, i) =>
+        `<div class="lyric-line" id="lyric-${i}">${l.text}</div>`
+      ).join('');
+    }
+
+    function startLyricsTimer() {
+      clearInterval(lyricsTimer);
+      lyricsTimer = setInterval(() => {
+        if (!lyricsLines.length) return;
+        // Encontrar la línea actual basada en la posición del track
+        let newIdx = -1;
+        for (let i = lyricsLines.length - 1; i >= 0; i--) {
+          if (position >= lyricsLines[i].time) { newIdx = i; break; }
+        }
+        if (newIdx === currentLineIdx) return;
+        currentLineIdx = newIdx;
+
+        // Actualizar clases
+        document.querySelectorAll('.lyric-line').forEach((el, i) => {
+          el.classList.remove('active', 'past');
+          if (i < newIdx) el.classList.add('past');
+          else if (i === newIdx) {
+            el.classList.add('active');
+            // Scroll suave a la línea activa
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+      }, 250);
+    }
+
+    // Al cambiar de canción, resetear letras
+    function resetLyrics() {
+      lyricsTrack = '';
+      lyricsLines = [];
+      plainLyrics = '';
+      currentLineIdx = -1;
+      clearInterval(lyricsTimer);
+      const main = document.getElementById('main-content');
+      if (main) main.classList.remove('has-lyrics');
+    }
   </script>
 </body>
 </html>
