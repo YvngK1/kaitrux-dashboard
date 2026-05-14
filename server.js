@@ -3,11 +3,31 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 require('dotenv').config();
 
 const app = express();
+
+// ──────────────────────────────────────────────
+// MIDDLEWARES
+// ──────────────────────────────────────────────
+app.use(helmet());
+
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
+
 app.use(express.json());
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*'
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ──────────────────────────────────────────────
@@ -18,187 +38,603 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('❌ MongoDB error:', err));
 
 // ──────────────────────────────────────────────
-// SCHEMAS
-// ──────────────────────────────────────────────
-const Prefix = mongoose.model('Prefix', new mongoose.Schema({
-  guildId: { type: String, required: true, unique: true },
-  prefix:  { type: String, required: true },
-}));
-
-const Warns = mongoose.model('warnings', new mongoose.Schema({
-  guildID:   String,
-  userID:    String,
-  warnings:  { type: Array, default: [] },
-}));
-
-const Logs = mongoose.model('Logs', new mongoose.Schema({
-  guildId: { type: String, required: true, unique: true },
-  channels: {
-    ban:      { type: String, default: null },
-    kick:     { type: String, default: null },
-    warn:     { type: String, default: null },
-    msgDelete:{ type: String, default: null },
-    msgEdit:  { type: String, default: null },
-    join:     { type: String, default: null },
-    leave:    { type: String, default: null },
-    autoMod:  { type: String, default: null },
-  },
-}));
-
-const KickNotify = mongoose.model('KickNotify', new mongoose.Schema({
-  guildId:        { type: String, required: true },
-  userId:         { type: String, required: true },
-  kickChannel:    { type: String, required: true },
-  discordChannel: { type: String, required: true },
-  enabled:        { type: Boolean, default: true },
-  lastLiveId:     { type: String, default: null },
-  lastNotifiedAt: { type: Date,   default: null },
-}));
-
-const TwitchNotify = mongoose.model('TwitchNotify', new mongoose.Schema({
-  guildId:        { type: String, required: true },
-  userId:         { type: String, required: true },
-  twitchChannel:  { type: String, required: true },
-  discordChannel: { type: String, required: true },
-  enabled:        { type: Boolean, default: true },
-  customMessage:  { type: String, default: null },
-  lastNotifiedAt: { type: Date,   default: null },
-  lastLiveId:     { type: String, default: null },
-}));
-
-const YouTubeNotify = mongoose.model('YouTubeNotify', new mongoose.Schema({
-  guildId:          { type: String, required: true },
-  userId:           { type: String, required: true },
-  discordChannel:   { type: String, required: true },
-  youtubeChannelId: { type: String, required: true },
-  lastVideoId:      { type: String, default: null },
-  enabled:          { type: Boolean, default: true },
-  customMessage:    { type: String, default: null },
-}, { timestamps: true }));
-
-const XNotify = mongoose.model('XNotify', new mongoose.Schema({
-  guildId:        { type: String, required: true },
-  userId:         { type: String, required: true },
-  xUsername:      { type: String, required: true },
-  discordChannel: { type: String, required: true },
-  enabled:        { type: Boolean, default: true },
-  lastTweetId:    { type: String, default: null },
-  lastNotifiedAt: { type: Date,   default: null },
-}));
-
-
-// ──────────────────────────────────────────────
 // AUTH MIDDLEWARE
 // ──────────────────────────────────────────────
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
-  if (!header) return res.status(401).json({ error: 'No token' });
+
+  if (!header) {
+    return res.status(401).json({
+      error: 'No token'
+    });
+  }
+
   const token = header.replace('Bearer ', '');
+
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch {
-    res.status(401).json({ error: 'Token inválido' });
+    res.status(401).json({
+      error: 'Token inválido'
+    });
   }
 }
 
 // ──────────────────────────────────────────────
-// DISCORD OAUTH2
+// SCHEMAS
+// ──────────────────────────────────────────────
+const Prefix = mongoose.model('Prefix', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  prefix: {
+    type: String,
+    required: true,
+  },
+}));
+
+const Warns = mongoose.model('warnings', new mongoose.Schema({
+  guildID: String,
+  userID: String,
+
+  warnings: {
+    type: Array,
+    default: [],
+  },
+}));
+
+const Logs = mongoose.model('Logs', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  channels: {
+    ban: {
+      type: String,
+      default: null,
+    },
+
+    kick: {
+      type: String,
+      default: null,
+    },
+
+    warn: {
+      type: String,
+      default: null,
+    },
+
+    msgDelete: {
+      type: String,
+      default: null,
+    },
+
+    msgEdit: {
+      type: String,
+      default: null,
+    },
+
+    join: {
+      type: String,
+      default: null,
+    },
+
+    leave: {
+      type: String,
+      default: null,
+    },
+
+    autoMod: {
+      type: String,
+      default: null,
+    },
+  },
+}));
+
+const KickNotify = mongoose.model('KickNotify', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+  },
+
+  userId: {
+    type: String,
+    required: true,
+  },
+
+  kickChannel: {
+    type: String,
+    required: true,
+  },
+
+  discordChannel: {
+    type: String,
+    required: true,
+  },
+
+  enabled: {
+    type: Boolean,
+    default: true,
+  },
+
+  lastLiveId: {
+    type: String,
+    default: null,
+  },
+
+  lastNotifiedAt: {
+    type: Date,
+    default: null,
+  },
+}));
+
+const TwitchNotify = mongoose.model('TwitchNotify', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+  },
+
+  userId: {
+    type: String,
+    required: true,
+  },
+
+  twitchChannel: {
+    type: String,
+    required: true,
+  },
+
+  discordChannel: {
+    type: String,
+    required: true,
+  },
+
+  enabled: {
+    type: Boolean,
+    default: true,
+  },
+
+  customMessage: {
+    type: String,
+    default: null,
+  },
+
+  lastNotifiedAt: {
+    type: Date,
+    default: null,
+  },
+
+  lastLiveId: {
+    type: String,
+    default: null,
+  },
+}));
+
+const YouTubeNotify = mongoose.model('YouTubeNotify', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+  },
+
+  userId: {
+    type: String,
+    required: true,
+  },
+
+  discordChannel: {
+    type: String,
+    required: true,
+  },
+
+  youtubeChannelId: {
+    type: String,
+    required: true,
+  },
+
+  lastVideoId: {
+    type: String,
+    default: null,
+  },
+
+  enabled: {
+    type: Boolean,
+    default: true,
+  },
+
+  customMessage: {
+    type: String,
+    default: null,
+  },
+
+}, {
+  timestamps: true,
+}));
+
+const XNotify = mongoose.model('XNotify', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+  },
+
+  userId: {
+    type: String,
+    required: true,
+  },
+
+  xUsername: {
+    type: String,
+    required: true,
+  },
+
+  discordChannel: {
+    type: String,
+    required: true,
+  },
+
+  enabled: {
+    type: Boolean,
+    default: true,
+  },
+
+  lastTweetId: {
+    type: String,
+    default: null,
+  },
+
+  lastNotifiedAt: {
+    type: Date,
+    default: null,
+  },
+}));
+
+const TikTokNotify = mongoose.model('TikTokNotify', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+  },
+
+  userId: {
+    type: String,
+    required: true,
+  },
+
+  tiktokUsername: {
+    type: String,
+    required: true,
+  },
+
+  discordChannel: {
+    type: String,
+    required: true,
+  },
+
+  enabled: {
+    type: Boolean,
+    default: true,
+  },
+
+  lastVideoId: {
+    type: String,
+    default: null,
+  },
+
+  lastNotifiedAt: {
+    type: Date,
+    default: null,
+  },
+
+}, {
+  timestamps: true,
+}));
+
+const PremiumKeys = mongoose.model('PremiumKeys', new mongoose.Schema({
+  key: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  type: {
+    type: String,
+    enum: ['user', 'server'],
+    required: true,
+  },
+
+  expiresAt: {
+    type: Date,
+    default: null,
+  },
+
+  redeemed: {
+    type: Boolean,
+    default: false,
+  },
+
+  redeemedAt: {
+    type: Date,
+    default: null,
+  },
+
+  guildId: {
+    type: String,
+    default: null,
+  },
+
+  userId: {
+    type: String,
+    default: null,
+  },
+
+}, {
+  timestamps: true,
+}));
+
+const PremiumServer = mongoose.model('PremiumServer', new mongoose.Schema({
+  guildId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+
+  premiumActivatedAt: {
+    type: Date,
+    default: null,
+  },
+
+  premiumExpiresAt: {
+    type: Date,
+    default: null,
+  },
+
+}, {
+  timestamps: true,
+}));
+
+const PremiumUser = mongoose.model('PremiumUser', new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+
+  premiumActivatedAt: {
+    type: Date,
+    default: null,
+  },
+
+  premiumExpiresAt: {
+    type: Date,
+    default: null,
+  },
+
+}, {
+  timestamps: true,
+}));
+
+// ──────────────────────────────────────────────
+// PREMIUM HELPER
+// ──────────────────────────────────────────────
+function isPremiumActive(doc) {
+  if (!doc || !doc.isPremium) {
+    return false;
+  }
+
+  if (!doc.premiumExpiresAt) {
+    return true;
+  }
+
+  return new Date(doc.premiumExpiresAt) > new Date();
+}
+
+// ──────────────────────────────────────────────
+// DISCORD
 // ──────────────────────────────────────────────
 const DISCORD_API = 'https://discord.com/api/v10';
-const SCOPES      = 'identify guilds';
+const SCOPES = 'identify guilds';
 
+// ──────────────────────────────────────────────
+// BOT STATUS URL
+// ──────────────────────────────────────────────
+const BOT_STATUS_URL =
+  process.env.BOT_STATUS_URL ||
+  'http://51.83.6.5:20046/status';
+
+const BOT_BASE_URL = BOT_STATUS_URL.replace('/status', '');
+
+// ──────────────────────────────────────────────
+// STATUS CACHE
+// ──────────────────────────────────────────────
+let statusCache = null;
+let lastStatusFetch = 0;
+
+// ──────────────────────────────────────────────
+// AUTH
+// ──────────────────────────────────────────────
 app.get('/api/auth/login', (req, res) => {
   const params = new URLSearchParams({
-    client_id:     process.env.CLIENT_ID,
-    redirect_uri:  process.env.REDIRECT_URI,
+    client_id: process.env.CLIENT_ID,
+    redirect_uri: process.env.REDIRECT_URI,
     response_type: 'code',
-    scope:         SCOPES,
+    scope: SCOPES,
   });
-  res.redirect(`https://discord.com/oauth2/authorize?${params}`);
+
+  res.redirect(
+    `https://discord.com/oauth2/authorize?${params}`
+  );
 });
 
 app.get('/api/auth/callback', async (req, res) => {
   const { code } = req.query;
-  if (!code) return res.redirect('/');
+
+  if (!code) {
+    return res.redirect('/');
+  }
 
   try {
-    // Intercambiar code por token
-    const tokenRes = await fetch(`${DISCORD_API}/oauth2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id:     process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
-        grant_type:    'authorization_code',
-        code,
-        redirect_uri:  process.env.REDIRECT_URI,
-      }),
-    });
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) throw new Error('No access token');
+    const tokenRes = await fetch(
+      `${DISCORD_API}/oauth2/token`,
+      {
+        method: 'POST',
 
-    // Obtener datos del usuario
-    const userRes  = await fetch(`${DISCORD_API}/users/@me`, {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` },
-    });
-    const user = await userRes.json();
+        headers: {
+          'Content-Type':
+            'application/x-www-form-urlencoded',
+        },
 
-    // Crear JWT propio
-    const jwtToken = jwt.sign(
-      { id: user.id, username: user.username, avatar: user.avatar, discordToken: tokenData.access_token },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+        body: new URLSearchParams({
+          client_id: process.env.CLIENT_ID,
+          client_secret: process.env.CLIENT_SECRET,
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: process.env.REDIRECT_URI,
+        }),
+      }
     );
 
-    res.redirect(`/dashboard.html?token=${jwtToken}`);
+    const tokenData = await tokenRes.json();
+
+    if (!tokenData.access_token) {
+      throw new Error('No access token');
+    }
+
+    const userRes = await fetch(
+      `${DISCORD_API}/users/@me`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${tokenData.access_token}`,
+        },
+      }
+    );
+
+    const user = await userRes.json();
+
+    const jwtToken = jwt.sign({
+      id: user.id,
+      username: user.username,
+      avatar: user.avatar,
+      discordToken: tokenData.access_token,
+    }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    res.redirect(`/dashboard?token=${jwtToken}`);
+
   } catch (e) {
     console.error('OAuth error:', e);
+
     res.redirect('/?error=auth_failed');
   }
 });
 
 // ──────────────────────────────────────────────
-// API - USER
+// USER
 // ──────────────────────────────────────────────
 app.get('/api/me', authMiddleware, (req, res) => {
-  const { id, username, avatar } = req.user;
-  res.json({ id, username, avatar });
+  const {
+    id,
+    username,
+    avatar,
+  } = req.user;
+
+  res.json({
+    id,
+    username,
+    avatar,
+  });
 });
 
 // ──────────────────────────────────────────────
-// API - GUILDS
+// GUILDS
 // ──────────────────────────────────────────────
 app.get('/api/guilds', authMiddleware, async (req, res) => {
   try {
-    const discordRes = await fetch(`${DISCORD_API}/users/@me/guilds`, {
-      headers: { Authorization: `Bearer ${req.user.discordToken}` },
-    });
+    const discordRes = await fetch(
+      `${DISCORD_API}/users/@me/guilds`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${req.user.discordToken}`,
+        },
+      }
+    );
+
+    if (!discordRes.ok) {
+      return res.status(401).json({
+        error:
+          'No se pudieron obtener los servidores',
+      });
+    }
+
     const guilds = await discordRes.json();
 
-    // Solo servidores donde el user es admin
-    const adminGuilds = guilds.filter(g => (BigInt(g.permissions) & BigInt(0x8)) === BigInt(0x8));
+    const adminGuilds = guilds.filter(g =>
+      (BigInt(g.permissions) & BigInt(0x8))
+      === BigInt(0x8)
+    );
 
-    // Verificar cuáles tienen el bot
-    const botGuildsRes = await fetch(`${DISCORD_API}/users/@me/guilds`, {
-      headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-    });
-    const botGuilds    = await botGuildsRes.json();
-    const botGuildIds  = new Set(botGuilds.map(g => g.id));
+    let botGuildIds = new Set();
 
-    const result = adminGuilds.map(g => ({
-      id:     g.id,
-      name:   g.name,
-      icon:   g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
-      hasBot: botGuildIds.has(g.id),
-    }));
+    try {
+      const botGuildsRes = await fetch(
+        `${BOT_BASE_URL}/guilds`
+      );
 
-    res.json(result);
+      if (botGuildsRes.ok) {
+        const botGuilds = await botGuildsRes.json();
+
+        if (Array.isArray(botGuilds)) {
+          botGuildIds = new Set(
+            botGuilds.map(g => g.id)
+          );
+        }
+      }
+
+    } catch (err) {
+      console.error(
+        'Bot guilds error:',
+        err
+      );
+    }
+
+    res.json(
+      adminGuilds.map(g => ({
+        id: g.id,
+        name: g.name,
+
+        icon: g.icon
+          ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png`
+          : null,
+
+        hasBot: botGuildIds.has(g.id),
+      }))
+    );
+
   } catch (e) {
     console.error('Guilds error:', e);
-    res.status(500).json({ error: 'Error obteniendo servidores' });
+
+    res.status(500).json({
+      error: 'Error obteniendo servidores',
+    });
   }
 });
+
 
 // ──────────────────────────────────────────────
 // API - CONFIG (prefix)
@@ -372,8 +808,6 @@ app.post('/api/player/:guildId/:action', authMiddleware, async (req, res) => {
 
 // API - STATUS COMPLETO
 // ──────────────────────────────────────────────
-const BOT_STATUS_URL = process.env.BOT_STATUS_URL || 'http://51.83.6.5:20046/status';
-
 async function fetchBotStatus() {
   try {
     const controller = new AbortController();
