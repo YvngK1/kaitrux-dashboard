@@ -772,7 +772,6 @@ app.delete('/api/guilds/:guildId/notify/x/:id', authMiddleware, async (req, res)
 // ──────────────────────────────────────────────
 // API - PLAYER DE MÚSICA
 // ──────────────────────────────────────────────
-const BOT_BASE_URL = (process.env.BOT_STATUS_URL || 'http://51.83.6.5:20046/status').replace('/status', '');
 
 async function fetchBotPlayer(guildId) {
   try {
