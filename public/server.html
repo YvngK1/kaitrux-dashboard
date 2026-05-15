@@ -128,12 +128,37 @@
         </div>
       </div>
     </div>
-        <div class="card-header"><span class="card-icon">⚠️</span><span class="card-title">Advertencias</span></div>
-        <div class="card-desc">Usuarios con advertencias activas. Podés limpiar el historial de cualquier usuario.</div>
-        <input type="text" id="warn-filter" placeholder="Filtrar por ID de usuario..." oninput="filterWarns()" style="max-width:320px;margin-bottom:1rem">
-        <div class="warns-list" id="warns-list"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    <!-- WARNS -->
+<div class="panel" id="panel-warns">
+  <div class="config-card">
+
+    <div class="card-header">
+      <span class="card-icon">⚠️</span>
+      <span class="card-title">Advertencias</span>
+    </div>
+
+    <div class="card-desc">
+      Usuarios con advertencias activas.
+      Podés limpiar el historial de cualquier usuario.
+    </div>
+
+    <input
+      type="text"
+      id="warn-filter"
+      placeholder="Filtrar por ID de usuario..."
+      oninput="filterWarns()"
+      style="max-width:320px;margin-bottom:1rem"
+    >
+
+    <div class="warns-list" id="warns-list">
+      <div class="loading">
+        <div class="spinner"></div>
+        Cargando...
       </div>
     </div>
+
+  </div>
+</div>
 
     <!-- LOGS -->
     <div class="panel" id="panel-logs">
