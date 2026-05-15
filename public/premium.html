@@ -6,288 +6,424 @@
   <title>Premium — Kaitrux</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg:#080810;--surface:#0f0f1a;--surface2:#141424;--border:rgba(255,255,255,0.07);
-      --accent:#5865F2;--accent2:#eb459e;--text:#e8e8f0;--muted:#6b6b8a;
-      --glow:rgba(88,101,242,0.35);--success:#57f287;--danger:#ed4245;--warning:#fee75c;
+    *,*::before,*::after{
+      box-sizing:border-box;
+      margin:0;
+      padding:0
     }
-    html{scroll-behavior:smooth}
-    body{background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;min-height:100vh;overflow-x:hidden}
-    body::before{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
 
-    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-    .logo{font-family:"Syne",sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .back-btn{color:var(--muted);text-decoration:none;font-size:0.88rem;transition:color 0.2s;display:flex;align-items:center;gap:0.4rem}
-    .back-btn:hover{color:var(--text)}
+    :root{
+      --bg:#080810;
+      --surface:#0f0f1a;
+      --surface2:#141424;
+      --border:rgba(255,255,255,0.07);
+      --accent:#5865F2;
+      --accent2:#eb459e;
+      --text:#e8e8f0;
+      --muted:#6b6b8a;
+      --glow:rgba(88,101,242,0.35);
+      --success:#57f287;
+      --danger:#ed4245;
+      --warning:#fee75c;
+    }
 
-    main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2.5rem 2rem}
+    html{
+      scroll-behavior:smooth
+    }
 
-    h1{font-family:"Syne",sans-serif;font-weight:800;font-size:2rem;letter-spacing:-0.5px;margin-bottom:0.4rem}
-    .subtitle{color:var(--muted);font-size:0.95rem;margin-bottom:2.5rem}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:"DM Sans",sans-serif;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
 
-    /* STATUS CARDS */
-    .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:2rem}
-    .status-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem 1.8rem;transition:border-color 0.3s}
-    .status-card.active{border-color:var(--warning);box-shadow:0 0 20px rgba(254,231,92,0.08)}
-    .status-label{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.6rem}
-    .status-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:1rem;font-weight:600;font-family:"Syne",sans-serif}
-    .badge-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-    .badge-dot.on{background:var(--warning);box-shadow:0 0 8px rgba(254,231,92,0.6)}
-    .badge-dot.off{background:var(--muted)}
-    .status-expiry{font-size:0.78rem;color:var(--muted);margin-top:0.4rem}
-    .status-expiry span{color:var(--warning)}
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events:none;
+      z-index:0
+    }
 
-    /* PERKS */
-    .section-title{font-family:"Syne",sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
-    .perks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0.8rem;margin-bottom:2.5rem}
-    .perk{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:0.75rem;transition:border-color 0.2s}
-    .perk:hover{border-color:rgba(254,231,92,0.3)}
-    .perk-icon{font-size:1.3rem;flex-shrink:0;margin-top:1px}
-    .perk-name{font-size:0.9rem;font-weight:600;margin-bottom:0.2rem}
-    .perk-desc{font-size:0.78rem;color:var(--muted);line-height:1.4}
+    nav{
+      position:sticky;
+      top:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:1rem 2.5rem;
+      background:rgba(8,8,16,0.85);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border)
+    }
 
-    /* REDEEM SECTION */
-    .redeem-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.8rem;margin-bottom:2rem}
-    .redeem-card h3{font-family:"Syne",sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.3rem}
-    .redeem-card p{color:var(--muted);font-size:0.85rem;margin-bottom:1.2rem;line-height:1.5}
+    .logo{
+      font-family:"Syne",sans-serif;
+      font-weight:800;
+      font-size:1.3rem;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent
+    }
 
-    .form-row{display:flex;gap:0.75rem;flex-wrap:wrap}
-    .form-group{display:flex;flex-direction:column;gap:0.4rem;flex:1;min-width:160px}
-    label{font-size:0.78rem;color:var(--muted);letter-spacing:0.04em}
-    input,select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.65rem 0.9rem;color:var(--text);font-family:"DM Sans",sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;width:100%}
-    input:focus,select:focus{border-color:var(--accent)}
-    input::placeholder{color:var(--muted)}
-    select option{background:var(--surface2)}
+    .back-btn{
+      color:var(--muted);
+      text-decoration:none;
+      font-size:0.88rem;
+      transition:color 0.2s;
+      display:flex;
+      align-items:center;
+      gap:0.4rem
+    }
 
-    .btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.68rem 1.4rem;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;text-decoration:none;transition:all 0.25s;border:none;white-space:nowrap}
-    .btn-primary{background:linear-gradient(135deg,var(--warning),#f0a500);color:#000;box-shadow:0 0 16px rgba(254,231,92,0.25)}
-    .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 28px rgba(254,231,92,0.4)}
-    .btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+    .back-btn:hover{
+      color:var(--text)
+    }
 
-    /* TOAST */
-    .toast{position:fixed;bottom:2rem;right:2rem;z-index:999;padding:0.85rem 1.3rem;border-radius:12px;font-size:0.88rem;font-weight:500;display:flex;align-items:center;gap:0.6rem;transform:translateY(100px);opacity:0;transition:all 0.3s;max-width:320px}
-    .toast.show{transform:translateY(0);opacity:1}
-    .toast.success{background:#0d2d1e;border:1px solid var(--success);color:var(--success)}
-    .toast.error{background:#2d0d0d;border:1px solid var(--danger);color:var(--danger)}
+    main{
+      position:relative;
+      z-index:1;
+      max-width:900px;
+      margin:0 auto;
+      padding:2.5rem 2rem
+    }
 
-    /* SPINNER */
-    .spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    h1{
+      font-family:"Syne",sans-serif;
+      font-weight:800;
+      font-size:2rem;
+      letter-spacing:-0.5px;
+      margin-bottom:0.4rem
+    }
 
-    @media(max-width:600px){.status-grid{grid-template-columns:1fr}.form-row{flex-direction:column}}
+    .subtitle{
+      color:var(--muted);
+      font-size:0.95rem;
+      margin-bottom:2.5rem
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1.2rem;
+      margin-bottom:2rem
+    }
+
+    .status-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:1.5rem 1.8rem;
+      transition:border-color 0.3s
+    }
+
+    .status-card.active{
+      border-color:var(--warning);
+      box-shadow:0 0 20px rgba(254,231,92,0.08)
+    }
+
+    .status-label{
+      font-size:0.75rem;
+      text-transform:uppercase;
+      letter-spacing:0.1em;
+      color:var(--muted);
+      margin-bottom:0.6rem
+    }
+
+    .status-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:0.4rem;
+      font-size:1rem;
+      font-weight:600;
+      font-family:"Syne",sans-serif
+    }
+
+    .badge-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      flex-shrink:0
+    }
+
+    .badge-dot.on{
+      background:var(--warning);
+      box-shadow:0 0 8px rgba(254,231,92,0.6)
+    }
+
+    .badge-dot.off{
+      background:var(--muted)
+    }
+
+    .status-expiry{
+      font-size:0.78rem;
+      color:var(--muted);
+      margin-top:0.4rem
+    }
+
+    .status-expiry span{
+      color:var(--warning)
+    }
+
+    .section-title{
+      font-family:"Syne",sans-serif;
+      font-weight:700;
+      font-size:1.1rem;
+      margin-bottom:1rem;
+      display:flex;
+      align-items:center;
+      gap:0.5rem
+    }
+
+    .perks-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:0.8rem;
+      margin-bottom:2.5rem
+    }
+
+    .perk{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1rem 1.2rem;
+      display:flex;
+      align-items:flex-start;
+      gap:0.75rem;
+      transition:border-color 0.2s
+    }
+
+    .perk:hover{
+      border-color:rgba(254,231,92,0.3)
+    }
+
+    .perk-icon{
+      font-size:1.3rem;
+      flex-shrink:0;
+      margin-top:1px
+    }
+
+    .perk-name{
+      font-size:0.9rem;
+      font-weight:600;
+      margin-bottom:0.2rem
+    }
+
+    .perk-desc{
+      font-size:0.78rem;
+      color:var(--muted);
+      line-height:1.4
+    }
+
+    .redeem-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:1.8rem;
+      margin-bottom:2rem
+    }
+
+    .redeem-card h3{
+      font-family:"Syne",sans-serif;
+      font-weight:700;
+      font-size:1.1rem;
+      margin-bottom:0.3rem
+    }
+
+    .redeem-card p{
+      color:var(--muted);
+      font-size:0.85rem;
+      margin-bottom:1.2rem;
+      line-height:1.5
+    }
+
+    .form-row{
+      display:flex;
+      gap:0.75rem;
+      flex-wrap:wrap
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      gap:0.4rem;
+      flex:1;
+      min-width:160px
+    }
+
+    label{
+      font-size:0.78rem;
+      color:var(--muted);
+      letter-spacing:0.04em
+    }
+
+    input,select{
+      background:var(--surface2);
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:0.65rem 0.9rem;
+      color:var(--text);
+      font-family:"DM Sans",sans-serif;
+      font-size:0.9rem;
+      outline:none;
+      transition:border-color 0.2s;
+      width:100%
+    }
+
+    input:focus,select:focus{
+      border-color:var(--accent)
+    }
+
+    input::placeholder{
+      color:var(--muted)
+    }
+
+    select option{
+      background:var(--surface2)
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      padding:0.68rem 1.4rem;
+      border-radius:10px;
+      font-family:"DM Sans",sans-serif;
+      font-weight:600;
+      font-size:0.9rem;
+      cursor:pointer;
+      text-decoration:none;
+      transition:all 0.25s;
+      border:none;
+      white-space:nowrap
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--warning),#f0a500);
+      color:#000;
+      box-shadow:0 0 16px rgba(254,231,92,0.25)
+    }
+
+    .btn-primary:hover:not(:disabled){
+      transform:translateY(-2px);
+      box-shadow:0 0 28px rgba(254,231,92,0.4)
+    }
+
+    .btn-primary:disabled{
+      opacity:0.5;
+      cursor:not-allowed
+    }
+
+    .toast{
+      position:fixed;
+      bottom:2rem;
+      right:2rem;
+      z-index:999;
+      padding:0.85rem 1.3rem;
+      border-radius:12px;
+      font-size:0.88rem;
+      font-weight:500;
+      display:flex;
+      align-items:center;
+      gap:0.6rem;
+      transform:translateY(100px);
+      opacity:0;
+      transition:all 0.3s;
+      max-width:320px
+    }
+
+    .toast.show{
+      transform:translateY(0);
+      opacity:1
+    }
+
+    .toast.success{
+      background:#0d2d1e;
+      border:1px solid var(--success);
+      color:var(--success)
+    }
+
+    .toast.error{
+      background:#2d0d0d;
+      border:1px solid var(--danger);
+      color:var(--danger)
+    }
+
+    .spinner{
+      width:16px;
+      height:16px;
+      border:2px solid rgba(0,0,0,0.2);
+      border-top-color:#000;
+      border-radius:50%;
+      animation:spin 0.7s linear infinite
+    }
+
+    @keyframes spin{
+      to{
+        transform:rotate(360deg)
+      }
+    }
+
+    @media(max-width:600px){
+      .status-grid{
+        grid-template-columns:1fr
+      }
+
+      .form-row{
+        flex-direction:column
+      }
+    }
   </style>
 </head>
+
 <body>
+
   <nav>
     <div class="logo">Kaitrux</div>
     <a href="/dashboard" class="back-btn">← Dashboard</a>
   </nav>
 
   <main>
-    <h1>👑 Premium</h1>
-    <p class="subtitle">Activá el premium para tu cuenta o servidor y desbloqueá funciones exclusivas.</p>
 
-    <!-- STATUS -->
-    <div class="status-grid" id="status-grid">
-      <div class="status-card">
+    <h1>👑 Premium</h1>
+
+    <p class="subtitle">
+      Activá el premium para tu cuenta o servidor y desbloqueá funciones exclusivas.
+    </p>
+
+    <div class="status-grid">
+
+      <div class="status-card" id="user-card">
         <div class="status-label">Tu cuenta</div>
-        <div class="status-badge"><div class="badge-dot off" id="user-dot"></div><span id="user-label">Cargando...</span></div>
+
+        <div class="status-badge">
+          <div class="badge-dot off" id="user-dot"></div>
+          <span id="user-label">Cargando...</span>
+        </div>
+
         <div class="status-expiry" id="user-expiry"></div>
       </div>
-      <div class="status-card" id="server-status-card">
+
+      <div class="status-card" id="server-card">
         <div class="status-label">Servidor actual</div>
-        <div class="status-badge"><div class="badge-dot off" id="server-dot"></div><span id="server-label">—</span></div>
+
+        <div class="status-badge">
+          <div class="badge-dot off" id="server-dot"></div>
+          <span id="server-label">—</span>
+        </div>
+
         <div class="status-expiry" id="server-expiry"></div>
       </div>
+
     </div>
 
-    <!-- PERKS -->
-    <div class="section-title">⚡ Funciones premium</div>
-    <div class="perks-grid">
-      <div class="perk"><div class="perk-icon">🔤</div><div><div class="perk-name">Blacklist de palabras</div><div class="perk-desc">Filtrá palabras específicas con !blacklistword</div></div></div>
-      <div class="perk"><div class="perk-icon">🎵</div><div><div class="perk-name">Colas ilimitadas</div><div class="perk-desc">Sin límite de canciones en la cola del player</div></div></div>
-      <div class="perk"><div class="perk-icon">🔔</div><div><div class="perk-name">Notificaciones extra</div><div class="perk-desc">Más plataformas y configuraciones avanzadas</div></div></div>
-      <div class="perk"><div class="perk-icon">⚙️</div><div><div class="perk-name">Automod avanzado</div><div class="perk-desc">Reglas personalizadas y umbrales configurables</div></div></div>
-      <div class="perk"><div class="perk-icon">🏷️</div><div><div class="perk-name">Badge premium</div><div class="perk-desc">Ícono 👑 en tu perfil y el servidor</div></div></div>
-      <div class="perk"><div class="perk-icon">🚀</div><div><div class="perk-name">Prioridad de soporte</div><div class="perk-desc">Respuesta prioritaria en el servidor de soporte</div></div></div>
-    </div>
-
-    <!-- REDEEM -->
-    <div class="redeem-card">
-      <h3>🔑 Canjear una key</h3>
-      <p>Si tenés una clave premium podés activarla acá. Las claves de tipo <strong>server</strong> activan el premium para el servidor seleccionado; las de tipo <strong>user</strong> activan el premium para tu cuenta.</p>
-
-      <div class="form-row" style="margin-bottom:1rem">
-        <div class="form-group">
-          <label>TIPO</label>
-          <select id="redeem-type" onchange="onTypeChange()">
-            <option value="user">Usuario</option>
-            <option value="server">Servidor</option>
-          </select>
-        </div>
-        <div class="form-group" id="guild-group" style="display:none">
-          <label>SERVIDOR</label>
-          <select id="redeem-guild">
-            <option value="">Cargando...</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:2">
-          <label>CLAVE</label>
-          <input type="text" id="redeem-key" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" spellcheck="false">
-        </div>
-      </div>
-
-      <button class="btn btn-primary" id="redeem-btn" onclick="redeemKey()">
-        Activar premium
-      </button>
-    </div>
   </main>
 
-  <div class="toast" id="toast"></div>
-
-  <script>
-    const SESSION_KEY = 'kaitrux_token';
-    const SESSION_EXP = 'kaitrux_token_exp';
-
-    function getToken() {
-      const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
-      if (Date.now() > exp) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); return null; }
-      return localStorage.getItem(SESSION_KEY);
-    }
-
-    // Leer token de URL si viene del callback
-    const urlToken = new URLSearchParams(location.search).get('token');
-    if (urlToken) {
-      localStorage.setItem(SESSION_KEY, urlToken);
-      localStorage.setItem(SESSION_EXP, Date.now() + 7 * 24 * 3600 * 1000);
-      history.replaceState({}, '', '/premium');
-    }
-
-    const token = getToken();
-    if (!token) location.href = '/';
-
-    async function apiFetch(path, opts = {}) {
-      const res = await fetch(path, {
-        ...opts,
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
-      });
-      if (res.status === 401) { location.href = '/'; }
-      return res.json();
-    }
-
-    function showToast(msg, type = 'success') {
-      const t = document.getElementById('toast');
-      t.className = `toast ${type}`;
-      t.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 4000);
-    }
-
-    function fmtDate(d) {
-      if (!d) return '';
-      return new Date(d).toLocaleDateString('es', { day: '2-digit', month: 'long', year: 'numeric' });
-    }
-
-    // ── Cargar guilds para el selector ─────────────────────────────────────
-    let guilds = [];
-    async function loadGuilds() {
-      guilds = await apiFetch('/api/guilds');
-      const sel = document.getElementById('redeem-guild');
-      sel.innerHTML = '';
-      guilds.filter(g => g.hasBot).forEach(g => {
-        const o = document.createElement('option');
-        o.value = g.id;
-        o.textContent = g.name;
-        sel.appendChild(o);
-      });
-      // Cargar status con el primer servidor
-      const first = guilds.find(g => g.hasBot);
-      if (first) loadStatus(first.id);
-    }
-
-    // ── Estado premium ──────────────────────────────────────────────────────
-    async function loadStatus(guildId) {
-      const data = await apiFetch(`/api/premium/status?guildId=${guildId}`);
-
-      // Usuario
-      const userActive = data.user?.isPremium;
-      const userDot    = document.getElementById('user-dot');
-      const userLabel  = document.getElementById('user-label');
-      const userExpiry = document.getElementById('user-expiry');
-      userDot.className   = `badge-dot ${userActive ? 'on' : 'off'}`;
-      userLabel.textContent = userActive ? '👑 Premium activo' : 'Sin premium';
-      if (userActive) {
-        document.querySelector('.status-card').classList.add('active');
-        userExpiry.innerHTML = data.user.expiresAt
-          ? `Vence el <span>${fmtDate(data.user.expiresAt)}</span>`
-          : '<span>Permanente ♾️</span>';
-      }
-
-      // Servidor
-      const serverActive = data.server?.isPremium;
-      const serverDot    = document.getElementById('server-dot');
-      const serverLabel  = document.getElementById('server-label');
-      const serverExpiry = document.getElementById('server-expiry');
-      serverDot.className   = `badge-dot ${serverActive ? 'on' : 'off'}`;
-      serverLabel.textContent = serverActive ? '👑 Premium activo' : 'Sin premium';
-      if (serverActive) {
-        document.getElementById('server-status-card').classList.add('active');
-        serverExpiry.innerHTML = data.server.expiresAt
-          ? `Vence el <span>${fmtDate(data.server.expiresAt)}</span>`
-          : '<span>Permanente ♾️</span>';
-      }
-    }
-
-    // ── Tipo de clave ───────────────────────────────────────────────────────
-    function onTypeChange() {
-      const type  = document.getElementById('redeem-type').value;
-      const group = document.getElementById('guild-group');
-      group.style.display = type === 'server' ? 'flex' : 'none';
-    }
-
-    // ── Canjear key ─────────────────────────────────────────────────────────
-    async function redeemKey() {
-      const type    = document.getElementById('redeem-type').value;
-      const key     = document.getElementById('redeem-key').value.trim();
-      const guildId = document.getElementById('redeem-guild').value;
-      const btn     = document.getElementById('redeem-btn');
-
-      if (!key) return showToast('Ingresá una clave.', 'error');
-      if (type === 'server' && !guildId) return showToast('Seleccioná un servidor.', 'error');
-
-      btn.disabled = true;
-      btn.innerHTML = '<div class="spinner"></div> Verificando...';
-
-      try {
-        const res = await apiFetch('/api/premium/redeem', {
-          method: 'POST',
-          body: JSON.stringify({ key, type, guildId: type === 'server' ? guildId : undefined }),
-        });
-
-        if (res.error) {
-          showToast(res.error, 'error');
-        } else {
-          document.getElementById('redeem-key').value = '';
-          const msg = type === 'server'
-            ? `¡Servidor premium activado! ${res.permanent ? 'Permanente 👑' : `Vence el ${fmtDate(res.expiresAt)}`}`
-            : `¡Cuenta premium activada! ${res.permanent ? 'Permanente 👑' : `Vence el ${fmtDate(res.expiresAt)}`}`;
-          showToast(msg);
-          // Recargar estado
-          if (type === 'server') loadStatus(guildId);
-          else loadStatus(guilds.find(g => g.hasBot)?.id || '');
-        }
-      } catch {
-        showToast('Error de red. Intentá de nuevo.', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Activar premium';
-      }
-    }
-
-    loadGuilds();
-  </script>
 </body>
 </html>
