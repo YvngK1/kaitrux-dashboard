@@ -21,6 +21,35 @@
     .nav-links{display:flex;gap:2rem;align-items:center;}
     .nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;}
     .nav-links a:hover{color:var(--text);}
+    
+    /* Contenedor y Selector de Idioma Integrado */
+    .lang-container {
+      display: flex;
+      align-items: center;
+      margin-left: 0.5rem;
+    }
+    #lang-select {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: "DM Sans", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s;
+    }
+    #lang-select:hover {
+      border-color: rgba(88,101,242,0.4);
+      background: rgba(88,101,242,0.08);
+    }
+    #lang-select option {
+      background: #0f0f1a;
+      color: var(--text);
+    }
+
     .btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.7rem 1.6rem;border-radius:10px;font-family:"DM Sans",sans-serif;font-weight:600;font-size:0.92rem;cursor:pointer;text-decoration:none;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);border:none;position:relative;overflow:hidden;letter-spacing:0.3px;}
     .btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.3s;}
     .btn-primary{background:linear-gradient(135deg,var(--accent),#7b68ee);color:#fff;box-shadow:0 0 20px var(--glow),0 4px 15px rgba(88,101,242,0.4);border:1px solid rgba(255,255,255,0.1);}
@@ -95,79 +124,92 @@
       <div class="logo">Kaitrux</div>
     </div>
     <div class="nav-links">
-      <a href="#features">Funciones</a>
-      <a href="/commands">Comandos</a>
-      <a href="https://top.gg/bot/1200646197304631326" target="_blank">Votar</a>
-      <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326" target="_blank">Soporte</a>
+      <a href="#features" data-i18n="idx-nav-features">Funciones</a>
+      <a href="/commands" data-i18n="idx-nav-commands">Comandos</a>
+      <a href="https://top.gg/bot/1200646197304631326" target="_blank" data-i18n="idx-nav-vote">Votar</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326" target="_blank" data-i18n="idx-nav-support">Soporte</a>
+      
+      <!-- Selector de Idioma en la barra de navegación -->
+      <div class="lang-container">
+        <select id="lang-select" onchange="changeLanguage(this.value)">
+          <option value="es">🇪🇸 ES</option>
+          <option value="en">🇺🇸 EN</option>
+        </select>
+      </div>
     </div>
+    
     <a href="/api/auth/login" class="btn btn-nav">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-      Login con Discord
+      <span data-i18n="idx-btn-login">Login con Discord</span>
     </a>
+    
     <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
   </nav>
 
   <div class="mobile-menu" id="mobile-menu">
-    <a href="#features" onclick="closeMenu()">Funciones</a>
-    <a href="/commands" onclick="closeMenu()">Comandos</a>
-    <a href="https://top.gg/bot/1200646197304631326" target="_blank" onclick="closeMenu()">Votar</a>
-    <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326" target="_blank" onclick="closeMenu()">Soporte</a>
+    <a href="#features" onclick="closeMenu()" data-i18n="idx-nav-features">Funciones</a>
+    <a href="/commands" onclick="closeMenu()" data-i18n="idx-nav-commands">Comandos</a>
+    <a href="https://top.gg/bot/1200646197304631326" target="_blank" onclick="closeMenu()" data-i18n="idx-nav-vote">Votar</a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326" target="_blank" onclick="closeMenu()" data-i18n="idx-nav-support">Soporte</a>
     <a href="/api/auth/login" class="btn-nav-mobile">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.053a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-      Login con Discord
+      <span data-i18n="idx-btn-login">Login con Discord</span>
     </a>
   </div>
 
   <section class="hero">
     <!-- PEGAR ACA hero-bg-cat y hero-avatar del original -->
-    <div class="hero-badge"><span></span> <span id="stat-servers-badge">—</span> servidores activos</div>
-    <h1>El bot que tu<br>servidor <em>necesita</em></h1>
-    <p>Música, moderación, economía, notificaciones en tiempo real y mucho más. Todo en uno, sin complicaciones.</p>
+    <div class="hero-badge"><span></span> <span id="stat-servers-badge">—</span> <span data-i18n="idx-hero-badge">servidores activos</span></div>
+    <h1 id="idx-hero-title">El bot que tu<br>servidor <em>necesita</em></h1>
+    <p data-i18n="idx-hero-desc">Música, moderación, economía, notificaciones en tiempo real y mucho más. Todo en uno, sin complicaciones.</p>
     <div class="hero-actions">
-      <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326&permissions=8&scope=bot+applications.commands" class="btn btn-primary" target="_blank">Añadir a Discord</a>
-      <a href="/commands" class="btn btn-ghost">📋 Comandos</a>
-      <a id="btn-player" href="#" class="btn btn-ghost">🎵 Player</a>
-      <a href="/status" class="btn btn-ghost">📡 Status</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326&permissions=8&scope=bot+applications.commands" class="btn btn-primary" target="_blank" data-i18n="idx-btn-add">Añadir a Discord</a>
+      <a href="/commands" class="btn btn-ghost" data-i18n="idx-btn-commands">📋 Comandos</a>
+      <a id="btn-player" href="#" class="btn btn-ghost" data-i18n="idx-btn-player">🎵 Player</a>
+      <a href="/status" class="btn btn-ghost" data-i18n="idx-btn-status">📡 Status</a>
     </div>
   </section>
 
   <section class="stats">
-    <div class="stat-card" style="animation-delay:0s"><div class="stat-number" id="stat-servers">—</div><div class="stat-label">Servidores</div></div>
-    <div class="stat-card" style="animation-delay:0.1s"><div class="stat-number" id="stat-users">—</div><div class="stat-label">Usuarios</div></div>
-    <div class="stat-card" style="animation-delay:0.2s"><div class="stat-number" id="stat-commands">—</div><div class="stat-label">Comandos</div></div>
-    <div class="stat-card" style="animation-delay:0.3s"><div class="stat-number" id="stat-ping">—</div><div class="stat-label">Ping (ms)</div></div>
+    <div class="stat-card" style="animation-delay:0s"><div class="stat-number" id="stat-servers">—</div><div class="stat-label" data-i18n="idx-stat-servers">Servidores</div></div>
+    <div class="stat-card" style="animation-delay:0.1s"><div class="stat-number" id="stat-users">—</div><div class="stat-label" data-i18n="idx-stat-users">Usuarios</div></div>
+    <div class="stat-card" style="animation-delay:0.2s"><div class="stat-number" id="stat-commands">—</div><div class="stat-label" data-i18n="idx-stat-commands">Comandos</div></div>
+    <div class="stat-card" style="animation-delay:0.3s"><div class="stat-number" id="stat-ping">—</div><div class="stat-label" data-i18n="idx-stat-ping">Ping (ms)</div></div>
   </section>
 
   <section class="features" id="features">
-    <h2 class="section-title">Todo lo que necesitás</h2>
+    <h2 class="section-title" data-i18n="idx-features-title">Todo lo que necesitás</h2>
     <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon">🎵</div><h3>Música sin interrupciones</h3><p>Reproduce desde YouTube y Spotify con autoplay inteligente y panel interactivo.</p></div>
-      <div class="feature-card"><div class="feature-icon">🔔</div><h3>Notificaciones en vivo</h3><p>Recibe avisos automáticos cuando tu streamer favorito se conecta en Twitch, Kick o YouTube.</p></div>
-      <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Moderación completa</h3><p>Warns, muteos, baneos y sistema de tickets para mantener tu servidor en orden.</p></div>
-      <div class="feature-card"><div class="feature-icon">💰</div><h3>Economía y Mascotas</h3><p>Trabaja, gana monedas, cuida tu mascota virtual y compra objetos en la tienda.</p></div>
-      <div class="feature-card"><div class="feature-icon">🎭</div><h3>Roleplay y Reacciones</h3><p>Decenas de comandos de acción anime para interactuar con otros miembros.</p></div>
-      <div class="feature-card"><div class="feature-icon">⚙️</div><h3>Dashboard Web</h3><p>Configurá tu servidor desde el navegador. Prefix, logs, notificaciones y más.</p></div>
+      <div class="feature-card"><div class="feature-icon">🎵</div><h3 data-i18n="idx-f1-t">Música sin interrupciones</h3><p data-i18n="idx-f1-d">Reproduce desde YouTube y Spotify con autoplay inteligente y panel interactivo.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔔</div><h3 data-i18n="idx-f2-t">Notificaciones en vivo</h3><p data-i18n="idx-f2-d">Recibe avisos automáticos cuando tu streamer favorito se conecta en Twitch, Kick o YouTube.</p></div>
+      <div class="feature-card"><div class="feature-icon">🛡️</div><h3 data-i18n="idx-f3-t">Moderación completa</h3><p data-i18n="idx-f3-d">Warns, muteos, baneos y sistema de tickets para mantener tu servidor en orden.</p></div>
+      <div class="feature-card"><div class="feature-icon">💰</div><h3 data-i18n="idx-f4-t">Economía y Mascotas</h3><p data-i18n="idx-f4-d">Trabaja, gana monedas, cuida tu mascota virtual y compra objetos en la tienda.</p></div>
+      <div class="feature-card"><div class="feature-icon">🎭</div><h3 data-i18n="idx-f5-t">Roleplay y Reacciones</h3><p data-i18n="idx-f5-d">Decenas de comandos de acción anime para interactuar con otros miembros.</p></div>
+      <div class="feature-card"><div class="feature-icon">⚙️</div><h3 data-i18n="idx-f6-t">Dashboard Web</h3><p data-i18n="idx-f6-d">Configurá tu servidor desde el navegador. Prefix, logs, notificaciones y más.</p></div>
     </div>
   </section>
 
   <section class="cta">
-    <h2>¿Listo para el next level?</h2>
-    <p>Únete a los servidores que ya usan Kaitrux.</p>
-    <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326&permissions=8&scope=bot+applications.commands" class="btn btn-primary" target="_blank" style="font-size:1rem;padding:0.8rem 2rem;">Añadir a Discord gratis</a>
+    <h2 data-i18n="idx-cta-title">¿Listo para el next level?</h2>
+    <p data-i18n="idx-cta-desc">Únete a los servidores que ya usan Kaitrux.</p>
+    <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326&permissions=8&scope=bot+applications.commands" class="btn btn-primary" target="_blank" style="font-size:1rem;padding:0.8rem 2rem;" data-i18n="idx-btn-cta">Añadir a Discord gratis</a>
   </section>
 
   <footer>
     <div class="footer-logo">
       <div class="logo" style="font-size:1.1rem">Kaitrux</div>
     </div>
-    <span>© 2025 Kaitrux. Hecho con 💜</span>
+    <span>© 2026 Kaitrux. Hecho con 💜</span>
     <div style="display:flex;gap:1.5rem">
       <a href="https://top.gg/bot/1200646197304631326" style="color:var(--muted);text-decoration:none">Top.gg</a>
-      <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326" style="color:var(--muted);text-decoration:none">Soporte</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1200646197304631326" style="color:var(--muted);text-decoration:none" data-i18n="idx-nav-support">Soporte</a>
     </div>
   </footer>
+
+  <!-- Script del Motor de Traducción de la App -->
+  <script src="/js/translate.js"></script>
 
   <script>
     // ── Player button ──────────────────────────────────────────────────────
@@ -204,7 +246,7 @@
         const fmt  = n => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n;
         document.getElementById('stat-servers').textContent       = fmt(data.servers);
         document.getElementById('stat-servers-badge').textContent = fmt(data.servers);
-        document.getElementById('stat-users').textContent         = data.users > 0 ? fmt(data.users) : '—';
+        document.getElementById('stat-users').textContent          = data.users > 0 ? fmt(data.users) : '—';
         document.getElementById('stat-commands').textContent      = data.commands;
         document.getElementById('stat-ping').textContent          = data.ping + 'ms';
       } catch (_) {}
