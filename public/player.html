@@ -445,19 +445,32 @@
     const key = `${title}|||${artist}`.toLowerCase();
     const main = document.getElementById('main-content');
     const topContainer = document.getElementById('top-container');
+    const body = document.getElementById('lyrics-body');
 
+    if (!body) return;
+
+    // Si es la misma canción, verificamos si el contenedor se vació por el render
     if (key === lyricsTrack) {
-      if (lyricsLines.length && !lyricsTimer && isPlaying) {
-        startLyricsTimer();
+      if (lyricsLines.length && (body.querySelector('.lyrics-loading') || !body.innerHTML.trim())) {
+        main.classList.add('has-lyrics');
+        if(topContainer) topContainer.style.maxWidth = "1300px";
+        document.getElementById('lyrics-source').textContent = 'sincronizadas';
+        renderSyncedLyrics();
+        // Forzamos al renderizador a marcar la línea actual en la que iba
+        currentLineIdx = -1; 
+        if (isPlaying) startLyricsTimer();
+      } else if (plainLyrics && (body.querySelector('.lyrics-loading') || !body.innerHTML.trim())) {
+        main.classList.add('has-lyrics');
+        if(topContainer) topContainer.style.maxWidth = "1300px";
+        document.getElementById('lyrics-source').textContent = 'sin sincronizar';
+        body.innerHTML = plainLyrics.split('\n').map(l => `<div class="lyric-line">${l}</div>`).join('');
       }
       return;
     }
 
+    // Si es una canción nueva, limpiamos y buscamos en la API
     lyricsTrack = key;
     resetLyrics();
-
-    const body = document.getElementById('lyrics-body');
-    if (!body) return;
 
     try {
       const q = new URLSearchParams({ track_name: title, artist_name: artist });
