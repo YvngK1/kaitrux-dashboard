@@ -146,430 +146,686 @@
     <div style="grid-column:1/-1" class="loading"><div class="spinner"></div> Cargando servidores...</div>
   </main>
 
-  <script>
-    const API = '';
-    const SESSION_KEY  = 'kaitrux_token';
-    const SESSION_EXP  = 'kaitrux_token_exp';
-    function getToken() {
-      const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
-      if (Date.now() > exp) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); return null; }
-      return localStorage.getItem(SESSION_KEY);
-    }
-    const token = getToken();
-    if (!token) location.href = '/';
+<script>
+  const API = '';
+  const SESSION_KEY = 'kaitrux_token';
+  const SESSION_EXP = 'kaitrux_token_exp';
 
-    let currentGuildId = null;
-    let pollInterval   = null;
-    let position       = 0;
-    let positionTimer  = null;
-    let duration       = 0;
-    let isPlaying      = false;
+  function getToken() {
+    const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
 
-    // ── LYRICS ──
-    let lyricsLines    = [];   // [{time, text}] sincronizadas
-    let plainLyrics    = '';   // texto plano si no hay LRC
-    let lyricsTrack    = '';   // título del track actual con letras cargadas
-    let lyricsTimer    = null;
-    let currentLineIdx = -1;
-
-    async function apiFetch(path, opts = {}) {
-      const res = await fetch(`${API}${path}`, {
-        ...opts,
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
-      });
-      if (res.status === 401) { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(SESSION_EXP); location.href = '/'; }
-      return res.json();
+    if (Date.now() > exp) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_EXP);
+      return null;
     }
 
-    function fmtTime(ms) {
-      if (!ms) return '0:00';
-      const s = Math.floor(ms / 1000);
-      const m = Math.floor(s / 60);
-      return `${m}:${String(s % 60).padStart(2, '0')}`;
-    }
-
-    // Cargar servidores con bot activo
-    async function loadGuilds() {
-      const guilds = await apiFetch('/api/guilds');
-      const select = document.getElementById('guild-select');
-      const active = guilds.filter(g => g.hasBot);
-      active.forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g.id;
-        opt.textContent = g.name;
-        select.appendChild(opt);
-      });
-      if (active.length === 1) {
-        select.value = active[0].id;
-        selectGuild(active[0].id);
-      } else {
-        document.getElementById('main-content').innerHTML = `
-          <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:4rem;color:var(--muted);text-align:center">
-            <div style="font-size:3rem">🎵</div>
-            <div>Seleccioná un servidor para ver el player.</div>
-          </div>`;
-      }
-    }
-
-    function selectGuild(guildId) {
-      if (!guildId) return;
-      currentGuildId = guildId;
-      clearInterval(pollInterval);
-      clearInterval(positionTimer);
-      loadPlayer();
-      pollInterval = setInterval(loadPlayer, 5000);
-    }
-
-    async function loadPlayer() {
-      if (!currentGuildId) return;
-      try {
-        const data = await apiFetch(`/api/player/${currentGuildId}`);
-        renderPlayer(data);
-        document.getElementById('refresh-label').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
-      } catch { /* silencioso */ }
-    }
-
-    function renderPlayer(data) {
-      const main = document.getElementById('main-content');
-
-      if (!data || !data.active) {
-        main.innerHTML = `
-          <div class="player-card" style="grid-column:1/-1">
-            <div class="inactive-state">
-              <div class="inactive-icon">🎵</div>
-              <div class="inactive-text">No hay música reproduciéndose en este servidor.</div>
-              <div style="font-size:0.82rem">Usá <strong>!play</strong> en Discord para empezar.</div>
-            </div>
-          </div>`;
-        return;
-      }
-
-      const track = data.currentTrack;
-      isPlaying   = data.isPlaying && !data.isPaused;
-      position    = data.position || 0;
-      duration    = track?.duration || 0;
-
-      // Progress timer local
-      clearInterval(positionTimer);
-      if (isPlaying) {
-        positionTimer = setInterval(() => {
-          position += 500;
-          if (position > duration) position = duration;
-          updateProgress();
-        }, 500);
-      }
-
-      const thumb = track?.thumbnail || '';
-      const pct   = duration ? Math.min((position / duration) * 100, 100) : 0;
-
-      main.innerHTML = `
-        <div class="player-card">
-          <div class="player-bg" id="player-bg" style="background-image:url('${thumb}')"></div>
-          <div class="album-wrap">
-            ${thumb
-              ? `<img class="album-art ${isPlaying ? 'playing' : ''}" id="album-art" src="${thumb}" alt="cover">`
-              : `<div class="album-placeholder">🎵</div>`}
-            <div class="track-info">
-              <div class="track-title" title="${track?.title || ''}">${track?.title || 'Sin título'}</div>
-              <div class="track-author">${track?.author || 'Artista desconocido'}</div>
-              ${track?.requester ? `<span class="track-requester">Pedido por ${track.requester}</span>` : ''}
-            </div>
-
-            <div class="progress-section">
-              <div class="progress-times">
-                <span id="pos-label">${fmtTime(position)}</span>
-                <span>${track?.isStream ? '🔴 En vivo' : fmtTime(duration)}</span>
-              </div>
-              <div class="progress-bar" onclick="seekTo(event, this)">
-                <div class="progress-fill" id="progress-fill" style="width:${pct}%"></div>
-              </div>
-            </div>
-
-            <div class="controls">
-              <button class="ctrl-btn" onclick="playerAction('previous')" title="Anterior">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
-              </button>
-              <button class="ctrl-btn play-btn" id="play-btn" onclick="togglePlay()">
-                ${isPlaying
-                  ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
-                  : `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`}
-              </button>
-              <button class="ctrl-btn" onclick="playerAction('skip')" title="Siguiente">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.02 2.14L8 14.14V9.86zM16 6h2v12h-2z"/></svg>
-              </button>
-              <button class="ctrl-btn" onclick="playerAction('stop')" title="Detener" style="margin-left:0.5rem">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
-              </button>
-            </div>
-
-            <div class="volume-row">
-              <span class="volume-icon">🔈</span>
-              <input type="range" class="volume-slider" min="0" max="100" value="${data.volume || 100}" oninput="setVolume(this.value)" id="vol-slider">
-              <span class="volume-val" id="vol-val">${data.volume || 100}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="queue-card">
-          <div class="queue-header">
-            <span class="queue-title">Cola</span>
-            <span class="queue-count">${data.queueLength || 0} canciones</span>
-          </div>
-          <div class="queue-list">
-            <!-- Canción actual -->
-            <div class="queue-item current">
-              <span class="queue-num">▶</span>
-              ${thumb ? `<img class="queue-thumb" src="${thumb}" alt="">` : `<div class="queue-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎵</div>`}
-              <div class="queue-info">
-                <div class="queue-name">${track?.title || 'Sin título'}</div>
-                <div class="queue-artist">${track?.author || ''}</div>
-              </div>
-              <span class="now-badge">NOW</span>
-            </div>
-            <!-- Queue -->
-            ${(data.queue || []).map((t, i) => `
-              <div class="queue-item">
-                <span class="queue-num">${i + 1}</span>
-                ${t.thumbnail
-                  ? `<img class="queue-thumb" src="${t.thumbnail}" alt="" onerror="this.style.display='none'">`
-                  : `<div class="queue-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--muted)">🎵</div>`}
-                <div class="queue-info">
-                  <div class="queue-name">${t.title || 'Sin título'}</div>
-                  <div class="queue-artist">${t.author || ''}</div>
-                </div>
-                <span class="queue-dur">${t.isStream ? '🔴' : fmtTime(t.duration)}</span>
-              </div>`).join('')}
-            ${!data.queue?.length ? `<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem">La cola está vacía.</div>` : ''}
-          </div>
-        </div>
-
-        <!-- LYRICS PANEL -->
-        <div class="lyrics-card" id="lyrics-card">
-          <div class="lyrics-header">
-            <span class="lyrics-title">🎶 Letras</span>
-            <span class="lyrics-source" id="lyrics-source"></span>
-          </div>
-          <div class="lyrics-body" id="lyrics-body">
-            <div class="lyrics-loading"><div class="lyrics-spinner"></div>Buscando letras...</div>
-          </div>
-        </div>`;
-
-      // Cargar letras para el track actual
-      loadLyrics(track?.title || '', track?.author || '');
-    }
-
-    function updateProgress() {
-      const fill  = document.getElementById('progress-fill');
-      const label = document.getElementById('pos-label');
-      if (!fill || !label) return;
-      const pct = duration ? Math.min((position / duration) * 100, 100) : 0;
-      fill.style.width  = pct + '%';
-      label.textContent = fmtTime(position);
-    }
-
-    async function togglePlay() {
-      await playerAction('pause');
-    }
-
-    async function playerAction(action, body = {}) {
-      try {
-        const res = await apiFetch(`/api/player/${currentGuildId}/${action}`, {
-          method: 'POST', body: JSON.stringify(body),
-        });
-        setTimeout(loadPlayer, 300);
-      } catch { /* silencioso */ }
-    }
-
-    let volumeTimer = null;
-    function setVolume(val) {
-      document.getElementById('vol-val').textContent = val;
-      clearTimeout(volumeTimer);
-      volumeTimer = setTimeout(() => playerAction('volume', { volume: parseInt(val) }), 400);
-    }
-
-    function seekTo(e, bar) {
-      const rect = bar.getBoundingClientRect();
-      const pct  = (e.clientX - rect.left) / rect.width;
-      // poru no soporta seek directo fácilmente, por ahora solo update visual
-      position = Math.floor(pct * duration);
-      updateProgress();
-    }
-
-    loadGuilds();
-
-    // ───────────────────────────────────────────────────────────────────────
-    // LYRICS
-    // ───────────────────────────────────────────────────────────────────────
-    function parseLRC(lrc) {
-      // Parsea formato [mm:ss.xx] letra
-      const lines = [];
-      for (const line of lrc.split('\n')) {
-        const match = line.match(/^\[(\d{2}):(\d{2}\.\d+)\](.*)/);
-        if (match) {
-          const time = parseInt(match[1]) * 60 * 1000 + parseFloat(match[2]) * 1000;
-          const text = match[3].trim();
-          if (text) lines.push({ time, text });
-        }
-      }
-      return lines.sort((a, b) => a.time - b.time);
-    }
-
-    async function loadLyrics(title, artist) {
-  const key = `${title}|||${artist}`.toLowerCase();
-
-  // 🔥 SI YA ESTÁN CARGADAS, REUTILIZAR
-  if (key === lyricsTrack) {
-    const body = document.getElementById('lyrics-body');
-
-    if (lyricsLines.length) {
-      renderSyncedLyrics();
-      startLyricsTimer();
-    } else if (plainLyrics) {
-      body.innerHTML = plainLyrics.split('\n').map(l =>
-        l.trim()
-          ? `<div class="lyric-line">${l}</div>`
-          : `<div style="height:0.8rem"></div>`
-      ).join('');
-    }
-
-    return;
+    return localStorage.getItem(SESSION_KEY);
   }
 
-  lyricsTrack    = key;
-  lyricsLines    = [];
-  plainLyrics    = '';
-  currentLineIdx = -1;
+  const token = getToken();
 
-  clearInterval(lyricsTimer);
+  if (!token) location.href = '/';
 
-  const body = document.getElementById('lyrics-body');
-  const card = document.getElementById('lyrics-card');
-  const main = document.getElementById('main-content');
+  let currentGuildId = null;
+  let pollInterval = null;
 
-  if (!body || !card) return;
+  let position = 0;
+  let duration = 0;
+  let isPlaying = false;
 
-  // 🔥 AHORA SÍ mostrar loading
-  body.innerHTML = `
-    <div class="lyrics-loading">
-      <div class="lyrics-spinner"></div>
-      Buscando letras...
-    </div>
-  `;
+  let positionTimer = null;
 
-  if (!title) {
-    body.innerHTML = `
-      <div class="lyrics-empty">
-        🎵
-        <span>No hay canción reproduciéndose</span>
-      </div>
-    `;
-    return;
-  }
+  // 🎵 LYRICS
+  let lyricsLines = [];
+  let plainLyrics = '';
+  let lyricsTrack = '';
+  let lyricsTimer = null;
+  let currentLineIdx = -1;
 
-  try {
-    const q = new URLSearchParams({
-      track_name: title,
-      artist_name: artist
+  // 🔥 FIX DESYNC
+  let lastServerPosition = 0;
+  let lastServerTimestamp = 0;
+
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(`${API}${path}`, {
+      ...opts,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...(opts.headers || {})
+      }
     });
 
-    const res = await fetch(`https://lrclib.net/api/get?${q}`);
-
-    if (!res.ok) throw new Error('not found');
-
-    const data = await res.json();
-
-    // 🔥 LETRAS SINCRONIZADAS
-    if (data.syncedLyrics) {
-      lyricsLines = parseLRC(data.syncedLyrics);
-
-      document.getElementById('lyrics-source').textContent = 'sincronizadas';
-
-      main.classList.add('has-lyrics');
-
-      renderSyncedLyrics();
-
-      startLyricsTimer();
+    if (res.status === 401) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_EXP);
+      location.href = '/';
     }
 
-    // 🔥 LETRAS PLANAS
-    else if (data.plainLyrics) {
-      plainLyrics = data.plainLyrics;
+    return res.json();
+  }
 
-      document.getElementById('lyrics-source').textContent = 'sin sincronizar';
+  function fmtTime(ms) {
+    if (!ms) return '0:00';
 
-      main.classList.add('has-lyrics');
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
 
-      body.innerHTML = plainLyrics.split('\n').map(l =>
-        l.trim()
-          ? `<div class="lyric-line">${l}</div>`
-          : `<div style="height:0.8rem"></div>`
-      ).join('');
+    return `${m}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  // ─────────────────────────────────────────────
+  // LOAD GUILDS
+  // ─────────────────────────────────────────────
+  async function loadGuilds() {
+    const guilds = await apiFetch('/api/guilds');
+
+    const select = document.getElementById('guild-select');
+
+    const active = guilds.filter(g => g.hasBot);
+
+    active.forEach(g => {
+      const opt = document.createElement('option');
+
+      opt.value = g.id;
+      opt.textContent = g.name;
+
+      select.appendChild(opt);
+    });
+
+    if (active.length === 1) {
+      select.value = active[0].id;
+      selectGuild(active[0].id);
+    } else {
+      document.getElementById('main-content').innerHTML = `
+        <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:4rem;color:var(--muted);text-align:center">
+          <div style="font-size:3rem">🎵</div>
+          <div>Seleccioná un servidor para ver el player.</div>
+        </div>
+      `;
+    }
+  }
+
+  function selectGuild(guildId) {
+    if (!guildId) return;
+
+    currentGuildId = guildId;
+
+    clearInterval(pollInterval);
+    clearInterval(positionTimer);
+
+    resetLyrics();
+
+    loadPlayer();
+
+    pollInterval = setInterval(loadPlayer, 5000);
+  }
+
+  // ─────────────────────────────────────────────
+  // LOAD PLAYER
+  // ─────────────────────────────────────────────
+  async function loadPlayer() {
+    if (!currentGuildId) return;
+
+    try {
+      const data = await apiFetch(`/api/player/${currentGuildId}`);
+
+      renderPlayer(data);
+
+      document.getElementById('refresh-label').textContent =
+        `Actualizado: ${new Date().toLocaleTimeString('es')}`;
+
+    } catch {}
+  }
+
+  // ─────────────────────────────────────────────
+  // RENDER PLAYER
+  // ─────────────────────────────────────────────
+  function renderPlayer(data) {
+    const main = document.getElementById('main-content');
+
+    if (!data || !data.active) {
+      resetLyrics();
+
+      main.innerHTML = `
+        <div class="player-card" style="grid-column:1/-1">
+          <div class="inactive-state">
+            <div class="inactive-icon">🎵</div>
+            <div class="inactive-text">
+              No hay música reproduciéndose en este servidor.
+            </div>
+            <div style="font-size:0.82rem">
+              Usá <strong>!play</strong> en Discord para empezar.
+            </div>
+          </div>
+        </div>
+      `;
+
+      return;
     }
 
-    else {
-      throw new Error('no lyrics');
+    const track = data.currentTrack;
+
+    isPlaying = data.isPlaying && !data.isPaused;
+
+    // 🔥 FIX DESYNC REAL
+    lastServerPosition = data.position || 0;
+    lastServerTimestamp = Date.now();
+
+    position = lastServerPosition;
+
+    duration = track?.duration || 0;
+
+    clearInterval(positionTimer);
+
+    if (isPlaying) {
+      positionTimer = setInterval(() => {
+        const elapsed = Date.now() - lastServerTimestamp;
+
+        position = lastServerPosition + elapsed;
+
+        if (position > duration) {
+          position = duration;
+        }
+
+        updateProgress();
+
+      }, 100);
     }
 
-  } catch {
-    document.getElementById('lyrics-source').textContent = '';
+    const thumb = track?.thumbnail || '';
 
-    main.classList.remove('has-lyrics');
+    const pct = duration
+      ? Math.min((position / duration) * 100, 100)
+      : 0;
 
-    body.innerHTML = `
-      <div class="lyrics-empty">
-        <span style="font-size:2rem">🎵</span>
-        <span>No se encontraron letras para esta canción</span>
-        <span style="font-size:0.78rem;color:var(--muted)">
-          Funciona mejor con canciones en inglés o español conocidas
-        </span>
+    main.innerHTML = `
+      <div class="player-card">
+        <div
+          class="player-bg"
+          style="background-image:url('${thumb}')">
+        </div>
+
+        <div class="album-wrap">
+
+          ${
+            thumb
+              ? `
+                <img
+                  class="album-art ${isPlaying ? 'playing' : ''}"
+                  src="${thumb}"
+                  alt="cover"
+                >
+              `
+              : `
+                <div class="album-placeholder">🎵</div>
+              `
+          }
+
+          <div class="track-info">
+            <div
+              class="track-title"
+              title="${track?.title || ''}">
+              ${track?.title || 'Sin título'}
+            </div>
+
+            <div class="track-author">
+              ${track?.author || 'Artista desconocido'}
+            </div>
+
+            ${
+              track?.requester
+                ? `
+                  <span class="track-requester">
+                    Pedido por ${track.requester}
+                  </span>
+                `
+                : ''
+            }
+          </div>
+
+          <div class="progress-section">
+
+            <div class="progress-times">
+              <span id="pos-label">${fmtTime(position)}</span>
+
+              <span>
+                ${
+                  track?.isStream
+                    ? '🔴 En vivo'
+                    : fmtTime(duration)
+                }
+              </span>
+            </div>
+
+            <div
+              class="progress-bar"
+              onclick="seekTo(event, this)"
+            >
+              <div
+                class="progress-fill"
+                id="progress-fill"
+                style="width:${pct}%"
+              ></div>
+            </div>
+          </div>
+
+          <div class="controls">
+
+            <button
+              class="ctrl-btn"
+              onclick="playerAction('previous')"
+              title="Anterior"
+            >
+              ⏮
+            </button>
+
+            <button
+              class="ctrl-btn play-btn"
+              onclick="togglePlay()"
+            >
+              ${isPlaying ? '⏸' : '▶'}
+            </button>
+
+            <button
+              class="ctrl-btn"
+              onclick="playerAction('skip')"
+              title="Siguiente"
+            >
+              ⏭
+            </button>
+
+            <button
+              class="ctrl-btn"
+              onclick="playerAction('stop')"
+              title="Detener"
+            >
+              ⏹
+            </button>
+          </div>
+
+          <div class="volume-row">
+            <span class="volume-icon">🔈</span>
+
+            <input
+              type="range"
+              class="volume-slider"
+              min="0"
+              max="100"
+              value="${data.volume || 100}"
+              oninput="setVolume(this.value)"
+            >
+
+            <span class="volume-val" id="vol-val">
+              ${data.volume || 100}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUEUE -->
+      <div class="queue-card">
+        <div class="queue-header">
+          <span class="queue-title">Cola</span>
+
+          <span class="queue-count">
+            ${data.queueLength || 0} canciones
+          </span>
+        </div>
+
+        <div class="queue-list">
+
+          <div class="queue-item current">
+            <span class="queue-num">▶</span>
+
+            ${
+              thumb
+                ? `<img class="queue-thumb" src="${thumb}">`
+                : `<div class="queue-thumb">🎵</div>`
+            }
+
+            <div class="queue-info">
+              <div class="queue-name">
+                ${track?.title || 'Sin título'}
+              </div>
+
+              <div class="queue-artist">
+                ${track?.author || ''}
+              </div>
+            </div>
+
+            <span class="now-badge">NOW</span>
+          </div>
+
+          ${(data.queue || []).map((t, i) => `
+            <div class="queue-item">
+
+              <span class="queue-num">
+                ${i + 1}
+              </span>
+
+              ${
+                t.thumbnail
+                  ? `<img class="queue-thumb" src="${t.thumbnail}">`
+                  : `<div class="queue-thumb">🎵</div>`
+              }
+
+              <div class="queue-info">
+                <div class="queue-name">
+                  ${t.title || 'Sin título'}
+                </div>
+
+                <div class="queue-artist">
+                  ${t.author || ''}
+                </div>
+              </div>
+
+              <span class="queue-dur">
+                ${t.isStream ? '🔴' : fmtTime(t.duration)}
+              </span>
+            </div>
+          `).join('')}
+
+        </div>
+      </div>
+
+      <!-- LYRICS -->
+      <div class="lyrics-card">
+
+        <div class="lyrics-header">
+          <span class="lyrics-title">🎶 Letras</span>
+
+          <span class="lyrics-source" id="lyrics-source"></span>
+        </div>
+
+        <div class="lyrics-body" id="lyrics-body">
+
+          <div class="lyrics-loading">
+            <div class="lyrics-spinner"></div>
+            Buscando letras...
+          </div>
+
+        </div>
       </div>
     `;
-  }
-}
 
-    function renderSyncedLyrics() {
-      const body = document.getElementById('lyrics-body');
-      if (!body || !lyricsLines.length) return;
-      body.innerHTML = lyricsLines.map((l, i) =>
-        `<div class="lyric-line" id="lyric-${i}">${l.text}</div>`
-      ).join('');
+    loadLyrics(
+      track?.title || '',
+      track?.author || ''
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // UPDATE PROGRESS
+  // ─────────────────────────────────────────────
+  function updateProgress() {
+    const fill = document.getElementById('progress-fill');
+    const label = document.getElementById('pos-label');
+
+    if (!fill || !label) return;
+
+    const pct = duration
+      ? Math.min((position / duration) * 100, 100)
+      : 0;
+
+    fill.style.width = pct + '%';
+
+    label.textContent = fmtTime(position);
+  }
+
+  // ─────────────────────────────────────────────
+  // PLAYER ACTIONS
+  // ─────────────────────────────────────────────
+  async function togglePlay() {
+    await playerAction('pause');
+  }
+
+  async function playerAction(action, body = {}) {
+    try {
+      await apiFetch(
+        `/api/player/${currentGuildId}/${action}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(body)
+        }
+      );
+
+      setTimeout(loadPlayer, 300);
+
+    } catch {}
+  }
+
+  let volumeTimer = null;
+
+  function setVolume(val) {
+    document.getElementById('vol-val').textContent = val;
+
+    clearTimeout(volumeTimer);
+
+    volumeTimer = setTimeout(() => {
+      playerAction('volume', {
+        volume: parseInt(val)
+      });
+    }, 300);
+  }
+
+  function seekTo(e, bar) {
+    const rect = bar.getBoundingClientRect();
+
+    const pct = (e.clientX - rect.left) / rect.width;
+
+    position = Math.floor(pct * duration);
+
+    updateProgress();
+  }
+
+  // ─────────────────────────────────────────────
+  // LYRICS
+  // ─────────────────────────────────────────────
+  function parseLRC(lrc) {
+    const lines = [];
+
+    for (const line of lrc.split('\n')) {
+
+      const match =
+        line.match(/^\[(\d+):(\d+\.\d+)\](.*)/);
+
+      if (!match) continue;
+
+      const min = parseInt(match[1]);
+      const sec = parseFloat(match[2]);
+
+      const time = (min * 60 + sec) * 1000;
+
+      const text = match[3].trim();
+
+      if (text) {
+        lines.push({ time, text });
+      }
     }
 
-    function startLyricsTimer() {
-      clearInterval(lyricsTimer);
-      lyricsTimer = setInterval(() => {
-        if (!lyricsLines.length) return;
-        // Encontrar la línea actual basada en la posición del track
-        let newIdx = -1;
-        for (let i = lyricsLines.length - 1; i >= 0; i--) {
-          if (position >= lyricsLines[i].time) { newIdx = i; break; }
-        }
-        if (newIdx === currentLineIdx) return;
-        currentLineIdx = newIdx;
+    return lines.sort((a, b) => a.time - b.time);
+  }
 
-        // Actualizar clases
-        document.querySelectorAll('.lyric-line').forEach((el, i) => {
+  async function loadLyrics(title, artist) {
+
+    const key = `${title}|||${artist}`.toLowerCase();
+
+    // 🔥 REUTILIZAR
+    if (key === lyricsTrack) {
+
+      const body = document.getElementById('lyrics-body');
+
+      if (lyricsLines.length) {
+        renderSyncedLyrics();
+        startLyricsTimer();
+      }
+
+      else if (plainLyrics) {
+        body.innerHTML = plainLyrics
+          .split('\n')
+          .map(l => `
+            <div class="lyric-line">${l}</div>
+          `)
+          .join('');
+      }
+
+      return;
+    }
+
+    lyricsTrack = key;
+
+    lyricsLines = [];
+    plainLyrics = '';
+
+    currentLineIdx = -1;
+
+    clearInterval(lyricsTimer);
+
+    const body = document.getElementById('lyrics-body');
+
+    body.innerHTML = `
+      <div class="lyrics-loading">
+        <div class="lyrics-spinner"></div>
+        Buscando letras...
+      </div>
+    `;
+
+    try {
+
+      const q = new URLSearchParams({
+        track_name: title,
+        artist_name: artist
+      });
+
+      const res = await fetch(
+        `https://lrclib.net/api/get?${q}`
+      );
+
+      if (!res.ok) {
+        throw new Error('Lyrics not found');
+      }
+
+      const data = await res.json();
+
+      // 🎯 SYNC
+      if (data.syncedLyrics) {
+
+        lyricsLines = parseLRC(data.syncedLyrics);
+
+        document.getElementById(
+          'lyrics-source'
+        ).textContent = 'sincronizadas';
+
+        renderSyncedLyrics();
+
+        startLyricsTimer();
+      }
+
+      // 📝 PLAIN
+      else if (data.plainLyrics) {
+
+        plainLyrics = data.plainLyrics;
+
+        document.getElementById(
+          'lyrics-source'
+        ).textContent = 'sin sincronizar';
+
+        body.innerHTML = plainLyrics
+          .split('\n')
+          .map(l => `
+            <div class="lyric-line">${l}</div>
+          `)
+          .join('');
+      }
+
+    } catch {
+
+      body.innerHTML = `
+        <div class="lyrics-empty">
+          <span style="font-size:2rem">🎵</span>
+
+          <span>
+            No se encontraron letras
+          </span>
+        </div>
+      `;
+    }
+  }
+
+  function renderSyncedLyrics() {
+
+    const body = document.getElementById('lyrics-body');
+
+    if (!body) return;
+
+    body.innerHTML = lyricsLines.map((l, i) => `
+      <div class="lyric-line" id="lyric-${i}">
+        ${l.text}
+      </div>
+    `).join('');
+  }
+
+  // 🔥 FIX REAL DESYNC
+  function startLyricsTimer() {
+
+    clearInterval(lyricsTimer);
+
+    lyricsTimer = setInterval(() => {
+
+      if (!lyricsLines.length) return;
+
+      let newIdx = -1;
+
+      for (let i = lyricsLines.length - 1; i >= 0; i--) {
+
+        if (position >= lyricsLines[i].time) {
+          newIdx = i;
+          break;
+        }
+      }
+
+      if (newIdx === currentLineIdx) return;
+
+      currentLineIdx = newIdx;
+
+      document
+        .querySelectorAll('.lyric-line')
+        .forEach((el, i) => {
+
           el.classList.remove('active', 'past');
-          if (i < newIdx) el.classList.add('past');
+
+          if (i < newIdx) {
+            el.classList.add('past');
+          }
+
           else if (i === newIdx) {
+
             el.classList.add('active');
-            // Scroll suave a la línea activa
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            el.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
           }
         });
-      }, 250);
-    }
 
-    // Al cambiar de canción, resetear letras
-    function resetLyrics() {
-      lyricsTrack = '';
-      lyricsLines = [];
-      plainLyrics = '';
-      currentLineIdx = -1;
-      clearInterval(lyricsTimer);
-      const main = document.getElementById('main-content');
-      if (main) main.classList.remove('has-lyrics');
-    }
-  </script>
+    }, 100);
+  }
+
+  function resetLyrics() {
+    lyricsTrack = '';
+
+    lyricsLines = [];
+    plainLyrics = '';
+
+    currentLineIdx = -1;
+
+    clearInterval(lyricsTimer);
+  }
+
+  loadGuilds();
+</script>
 </body>
 </html>
