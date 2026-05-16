@@ -14,6 +14,13 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ MongoDB conectado'))
     .catch(err => console.error('❌ MongoDB error:', err));
 
+// ── SUB-ESQUEMAS ─────────────────────────────────────────────────────────────
+const SingleWarnSchema = new mongoose.Schema({
+    reason:    { type: String, required: true },
+    moderator: { type: String, required: true },
+    createdAt: { type: Date,   default: Date.now }
+});
+
 // ── MODELOS ──────────────────────────────────────────────────────────────────
 const Prefix = mongoose.model('Prefix', new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
@@ -21,22 +28,22 @@ const Prefix = mongoose.model('Prefix', new mongoose.Schema({
 }));
 
 const Warns = mongoose.model('warnings', new mongoose.Schema({
-    guildID:  String,
-    userID:   String,
-    warnings: { type: Array, default: [] },
+    guildID:  { type: String, required: true },
+    userID:   { type: String, required: true },
+    warnings: [SingleWarnSchema], // Arreglo tipado: Mongoose ahora trackea cambios nativamente
 }));
 
 const Logs = mongoose.model('Logs', new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
     channels: {
-        ban:      { type: String, default: null },
-        kick:     { type: String, default: null },
-        warn:     { type: String, default: null },
-        msgDelete:{ type: String, default: null },
-        msgEdit:  { type: String, default: null },
-        join:     { type: String, default: null },
-        leave:    { type: String, default: null },
-        autoMod:  { type: String, default: null },
+        ban:       { type: String, default: null },
+        kick:      { type: String, default: null },
+        warn:      { type: String, default: null },
+        msgDelete: { type: String, default: null },
+        msgEdit:   { type: String, default: null },
+        join:      { type: String, default: null },
+        leave:     { type: String, default: null },
+        autoMod:   { type: String, default: null },
     },
 }));
 
@@ -76,18 +83,23 @@ const PremiumUser = mongoose.model('PremiumUser', new mongoose.Schema({
     premiumExpiresAt: { type: Date,    default: null },
 }, { timestamps: true }));
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+// ── HELPERS / MIDDLEWARES ─────────────────────────────────────────────────────
 function authMiddleware(req, res, next) {
     const header = req.headers.authorization;
-    if (!header) return res.status(401).json({ error: 'No token' });
+    if (!header) return res.status(401).json({ error: 'No token proporcionado' });
+    
     const token = header.replace('Bearer ', '');
-    try { req.user = jwt.verify(token, process.env.JWT_SECRET); next(); }
-    catch { res.status(401).json({ error: 'Token inválido' }); }
+    try { 
+        req.user = jwt.verify(token, process.env.JWT_SECRET); 
+        next(); 
+    } catch { 
+        res.status(401).json({ error: 'Token inválido o expirado' }); 
+    }
 }
 
 function isPremiumActive(doc) {
     if (!doc || !doc.isPremium) return false;
-    if (!doc.premiumExpiresAt) return true;
+    if (!doc.premiumExpiresAt) return true; // Permanente
     return new Date(doc.premiumExpiresAt) > new Date();
 }
 
@@ -110,13 +122,15 @@ app.get('/api/auth/login', (req, res) => {
 app.get('/api/auth/callback', async (req, res) => {
     const { code, state } = req.query;
     if (!code) return res.redirect('/');
+    
     let redirectTo = '/dashboard';
     try {
         const decoded = Buffer.from(state || '', 'base64').toString('utf8');
         if (decoded.startsWith('/')) redirectTo = decoded;
     } catch {}
+
     try {
-        const tokenRes  = await fetch(`${DISCORD_API}/oauth2/token`, {
+        const tokenRes = await fetch(`${DISCORD_API}/oauth2/token`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
@@ -127,11 +141,16 @@ app.get('/api/auth/callback', async (req, res) => {
                 redirect_uri:  process.env.REDIRECT_URI,
             }),
         });
+        
         const tokenData = await tokenRes.json();
-        const userRes   = await fetch(`${DISCORD_API}/users/@me`, {
+        if (tokenData.error) throw new Error(tokenData.error_description);
+
+        const userRes = await fetch(`${DISCORD_API}/users/@me`, {
             headers: { Authorization: `Bearer ${tokenData.access_token}` },
         });
         const user = await userRes.json();
+        
+        // Payload seguro (puedes encriptar el tokenData.access_token si necesitas máxima seguridad)
         const jwtToken = jwt.sign(
             { id: user.id, username: user.username, avatar: user.avatar, discordToken: tokenData.access_token },
             process.env.JWT_SECRET,
@@ -139,17 +158,17 @@ app.get('/api/auth/callback', async (req, res) => {
         );
         res.redirect(`${redirectTo}?token=${jwtToken}`);
     } catch (e) {
-        console.error('OAuth error:', e);
+        console.error('❌ OAuth error:', e);
         res.redirect('/?error=auth_failed');
     }
 });
 
-// ── API — USUARIO ─────────────────────────────────────────────────────────────
+// ── API — USUARIO Y GUILDS ─────────────────────────────────────────────────────
 app.get('/api/me', authMiddleware, (req, res) => res.json(req.user));
 
 app.get('/api/user/:userId', authMiddleware, async (req, res) => {
     try {
-        const r    = await fetch(`${DISCORD_API}/users/${req.params.userId}`, { headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` } });
+        const r = await fetch(`${DISCORD_API}/users/${req.params.userId}`, { headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` } });
         const user = await r.json();
         res.json({
             id: user.id, username: user.username,
@@ -161,7 +180,6 @@ app.get('/api/user/:userId', authMiddleware, async (req, res) => {
     } catch { res.json({ id: req.params.userId, username: 'Desconocido', avatar: null }); }
 });
 
-// ── API — GUILDS ──────────────────────────────────────────────────────────────
 app.get('/api/guilds', authMiddleware, async (req, res) => {
     try {
         const [uRes, bRes] = await Promise.all([
@@ -171,11 +189,12 @@ app.get('/api/guilds', authMiddleware, async (req, res) => {
         const guilds    = await uRes.json();
         const botGuilds = await bRes.json();
         const botIds    = new Set(botGuilds.map(g => g.id));
+        
         res.json(guilds
-            .filter(g => (BigInt(g.permissions) & BigInt(0x8)) === BigInt(0x8))
+            .filter(g => (BigInt(g.permissions) & BigInt(0x8)) === BigInt(0x8)) // Verificar permiso ADMINISTRATOR
             .map(g => ({ id: g.id, name: g.name, icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null, hasBot: botIds.has(g.id) }))
         );
-    } catch (e) { res.status(500).json({ error: 'Error en guilds' }); }
+    } catch (e) { res.status(500).json({ error: 'Error al procesar servidores asociados.' }); }
 });
 
 // ── API — PREFIX ──────────────────────────────────────────────────────────────
@@ -183,41 +202,48 @@ app.get('/api/guilds/:guildId/config', authMiddleware, async (req, res) => {
     const doc = await Prefix.findOne({ guildId: req.params.guildId });
     res.json({ prefix: doc?.prefix || '!' });
 });
+
 app.post('/api/guilds/:guildId/config', authMiddleware, async (req, res) => {
     const { prefix } = req.body;
-    if (!prefix || prefix.length > 5) return res.status(400).json({ error: 'Inválido' });
+    if (!prefix || prefix.length > 5) return res.status(400).json({ error: 'El prefijo debe tener entre 1 y 5 caracteres.' });
     await Prefix.findOneAndUpdate({ guildId: req.params.guildId }, { prefix }, { upsert: true });
     res.json({ success: true, prefix });
 });
 
-// ── API — WARNS ───────────────────────────────────────────────────────────────
+// ── API — WARNS (OPTIMIZADO) ──────────────────────────────────────────────────
 app.get('/api/guilds/:guildId/warns', authMiddleware, async (req, res) => {
     res.json(await Warns.find({ guildID: req.params.guildId }));
 });
+
 app.delete('/api/guilds/:guildId/warns/:userId', authMiddleware, async (req, res) => {
-    await Warns.findOneAndUpdate({ guildID: req.params.guildId, userID: req.params.userId }, { warnings: [] });
+    await Warns.deleteOne({ guildID: req.params.guildId, userID: req.params.userId });
     res.json({ success: true });
 });
+
 app.delete('/api/guilds/:guildId/warns/:userId/:index', authMiddleware, async (req, res) => {
-    const doc = await Warns.findOne({ guildID: req.params.guildId, userID: req.params.userId });
-    if (!doc) return res.status(404).json({ error: 'No encontrado' });
-    doc.warnings.splice(parseInt(req.params.index), 1);
-    doc.markModified('warnings');
+    const { guildId, userId, index } = req.params;
+    const doc = await Warns.findOne({ guildID: guildId, userID: userId });
+    if (!doc) return res.status(404).json({ error: 'No se encontraron registros de advertencias.' });
+    
+    const idx = parseInt(index);
+    if (isNaN(idx) || idx < 0 || idx >= doc.warnings.length) return res.status(400).json({ error: 'Índice fuera de rango.' });
+    
+    doc.warnings.splice(idx, 1); // Al estar tipado como sub-esquema, detecta el cambio automáticamente
     await doc.save();
     res.json({ success: true });
 });
 
-// ── API — LOGS ────────────────────────────────────────────────────────────────
+// ── API — LOGS Y NOTIFICACIONES ───────────────────────────────────────────────
 app.get('/api/guilds/:guildId/logs', authMiddleware, async (req, res) => {
     const doc = await Logs.findOne({ guildId: req.params.guildId });
     res.json(doc?.channels || {});
 });
+
 app.post('/api/guilds/:guildId/logs', authMiddleware, async (req, res) => {
     await Logs.findOneAndUpdate({ guildId: req.params.guildId }, { channels: req.body.channels }, { upsert: true });
     res.json({ success: true });
 });
 
-// ── API — NOTIFICACIONES ──────────────────────────────────────────────────────
 const notifyModels = { twitch: TwitchNotify, kick: KickNotify, youtube: YouTubeNotify, x: XNotify, tiktok: TikTokNotify };
 Object.entries(notifyModels).forEach(([name, Model]) => {
     app.get(`/api/guilds/:guildId/notify/${name}`, authMiddleware, async (req, res) => res.json(await Model.find({ guildId: req.params.guildId })));
@@ -246,21 +272,26 @@ app.get('/api/premium/status', authMiddleware, async (req, res) => {
 app.post('/api/premium/redeem', authMiddleware, async (req, res) => {
     const { key, type, guildId } = req.body;
     if (!key || !['user','server'].includes(type)) return res.status(400).json({ error: 'Parámetros inválidos.' });
-    if (type === 'server' && !guildId) return res.status(400).json({ error: 'Falta guildId.' });
+    if (type === 'server' && !guildId) return res.status(400).json({ error: 'Falta especificar el ID del servidor.' });
+    
     const found = await PremiumKeys.findOne({ key, type, redeemed: false });
-    if (!found) return res.status(404).json({ error: 'Clave inválida o ya utilizada.' });
-    if (found.expiresAt && new Date(found.expiresAt) < new Date()) return res.status(400).json({ error: 'Esta clave ya venció.' });
-    found.redeemed = true; found.redeemedAt = new Date();
+    if (!found) return res.status(404).json({ error: 'Clave inválida, expirada o ya reclamada.' });
+    if (found.expiresAt && new Date(found.expiresAt) < new Date()) return res.status(400).json({ error: 'Esta clave premium ha caducado.' });
+    
+    found.redeemed = true; 
+    found.redeemedAt = new Date();
     if (type === 'server') found.guildId = guildId;
     if (type === 'user')   found.userId   = req.user.id;
     await found.save();
+    
     const update = { isPremium: true, premiumExpiresAt: found.expiresAt || null };
     if (type === 'server') await PremiumServer.findOneAndUpdate({ guildId }, update, { upsert: true });
     else                   await PremiumUser.findOneAndUpdate({ userId: req.user.id }, update, { upsert: true });
+    
     res.json({ success: true, type, expiresAt: found.expiresAt || null, permanent: !found.expiresAt });
 });
 
-// ── API — PLAYER ──────────────────────────────────────────────────────────────
+// ── API — PLAYER COMUNICATION ──────────────────────────────────────────────────
 const BOT_BASE = (process.env.BOT_STATUS_URL || 'http://51.83.6.5:20046/status').replace('/status', '');
 
 async function botFetch(path, opts = {}) {
@@ -269,41 +300,48 @@ async function botFetch(path, opts = {}) {
     try {
         const res = await fetch(`${BOT_BASE}${path}`, { ...opts, signal: ctrl.signal });
         clearTimeout(t);
+        if (!res.ok) return null;
         return await res.json();
-    } catch { clearTimeout(t); return null; }
+    } catch { 
+        clearTimeout(t); 
+        return null; 
+    }
 }
 
 app.get('/api/player/:guildId', authMiddleware, async (req, res) => {
     const data = await botFetch(`/player/${req.params.guildId}`);
-    if (!data) return res.status(503).json({ error: 'Bot no disponible' });
+    if (!data) return res.status(503).json({ error: 'El servicio del bot de música no se encuentra disponible.' });
     res.json(data);
 });
+
 app.post('/api/player/:guildId/:action', authMiddleware, async (req, res) => {
     const data = await botFetch(`/player/${req.params.guildId}/${req.params.action}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body),
     });
-    if (!data) return res.status(503).json({ error: 'Bot no disponible' });
+    if (!data) return res.status(503).json({ error: 'No se pudo enviar la acción. El bot de música no responde.' });
     res.json(data);
 });
 
-// ── API — STATUS / STATS ──────────────────────────────────────────────────────
+// ── API — STATUS Y MONITOREO ──────────────────────────────────────────────────
 app.get('/api/status', async (req, res) => {
     const d = await botFetch('/status');
     res.json({
         site:      { online: true, latency: 0 },
         bot:       d ? d.bot      : { online: false, ping: null, uptime: null, guilds: null, users: null },
         lavalink:  d ? d.lavalink : { nodes: [], totalNodes: 0, connectedNodes: 0 },
-        database:  d ? d.database : { online: false, status: 'unknown' },
+        database:  d ? d.database : { online: false, status: 'Desconectado' },
         timestamp: Date.now(),
     });
 });
+
 app.get('/api/stats', async (req, res) => {
     const d = await botFetch('/status');
     res.json({ servers: d?.bot?.guilds || 0, users: d?.bot?.users || 0, commands: 80, ping: d?.bot?.ping || 0 });
 });
 
-// ── PÁGINAS ───────────────────────────────────────────────────────────────────
-['dashboard','server','status','commands','player','premium'].forEach(p => {
+// ── ROUTING ESTÁTICO DE VISTAS ────────────────────────────────────────────────
+const PAGES = ['dashboard', 'server', 'status', 'commands', 'player', 'premium'];
+PAGES.forEach(p => {
     app.get(`/${p}`, (req, res) => res.sendFile(path.join(__dirname, 'public', `${p}.html`)));
 });
 app.get('/player/:guildId', (req, res) => res.sendFile(path.join(__dirname, 'public', 'player.html')));
@@ -311,4 +349,4 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.use((req, res) => res.status(404).sendFile(path.join(__dirname, 'public', '404.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server ready on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 API Server escuchando en el puerto ${PORT}`));
