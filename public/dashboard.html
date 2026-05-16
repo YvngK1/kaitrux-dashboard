@@ -1,210 +1,363 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Dashboard - Select Server</title>
-    <style>
-        /* Estilos Base estilo Discord Dark */
-        body {
-            background-color: #36393f;
-            color: #dcddde;
-            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
 
-        /* Navbar */
-        .navbar {
-            background-color: #2f3136;
-            padding: 15px 30px;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .navbar a {
-            color: #b9bbbe;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.2s;
-        }
-        
-        .navbar a:hover {
-            color: #fff;
-        }
+  <meta charset="UTF-8"/>
 
-        /* Selector de Idioma (Arriba a la Derecha) */
-        .lang-container {
-            position: absolute;
-            top: 12px;
-            right: 20px;
-            z-index: 1000;
-        }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-        #lang-select {
-            background-color: #202225;
-            color: #ffffff;
-            border: 1px solid #4f545c;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            outline: none;
-            font-size: 14px;
-        }
+  <title>Dashboard — Kaitrux</title>
 
-        #lang-select:hover {
-            border-color: #5865f2;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
 
-        /* Contenedor Principal */
-        .container {
-            max-width: 1100px;
-            margin: 60px auto;
-            padding: 0 20px;
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
-        .header-section {
-            margin-bottom: 40px;
-        }
+  <style>
 
-        .header-section h1 {
-            color: #fff;
-            margin-bottom: 10px;
-        }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Rejilla de Servidores */
-        .server-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 25px;
-        }
+    :root {
 
-        /* Tarjeta de Servidor */
-        .server-card {
-            background-color: #2f3136;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+      --bg: #080810; --surface: #0f0f1a; --surface2: #141424;
 
-        .server-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-        }
+      --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
 
-        .server-icon {
-            width: 80px;
-            height: 80px;
-            background-color: #40444b;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #fff;
-            font-weight: bold;
-            background-size: cover;
-            background-position: center;
-        }
+      --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
 
-        .server-name {
-            color: #fff;
-            font-size: 18px;
-            margin: 10px 0 20px 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+      --success: #57f287; --danger: #ed4245;
 
-        /* Botones de Acción */
-        .btn-action {
-            display: block;
-            width: 100%;
-            padding: 10px 0;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            text-decoration: none;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            box-sizing: border-box;
-        }
+    }
 
-        .btn-manage {
-            background-color: #43b581;
-            color: white;
-        }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
 
-        .btn-manage:hover {
-            background-color: #3ca374;
-        }
+    body::before {
 
-        .btn-invite {
-            background-color: #4f545c;
-            color: #b9bbbe;
-        }
+      content: ''; position: fixed; inset: 0;
 
-        .btn-invite:hover {
-            background-color: #72767d;
-            color: #fff;
-        }
-    </style>
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+
+      pointer-events: none; z-index: 0;
+
+    }
+
+    nav {
+
+      position: sticky; top: 0; z-index: 100;
+
+      display: flex; align-items: center; justify-content: space-between;
+
+      padding: 1rem 2.5rem;
+
+      background: rgba(8,8,16,0.85); backdrop-filter: blur(20px);
+
+      border-bottom: 1px solid var(--border);
+
+    }
+
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .user-info { display: flex; align-items: center; gap: 0.75rem; }
+
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--accent); }
+
+    .user-name { font-size: 0.9rem; font-weight: 500; }
+
+    .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+    .page-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+
+    .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+    .guilds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+
+
+
+    .guild-card {
+
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+
+      padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.85rem;
+
+      text-align: center; transition: all 0.25s; text-decoration: none; color: var(--text);
+
+      position: relative; overflow: hidden; animation: fadeUp 0.4s ease both;
+
+    }
+
+    .guild-card.has-bot:hover { border-color: rgba(88,101,242,0.4); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(88,101,242,0.1); }
+
+    .guild-card.no-bot { opacity: 0.7; }
+
+
+
+    .guild-icon { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface2); object-fit: cover; }
+
+    .guild-icon-placeholder { width: 64px; height: 64px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--accent); }
+
+    .guild-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+
+
+
+    .badge { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 100px; font-weight: 600; }
+
+    .badge-bot { background: rgba(87,242,135,0.1); color: var(--success); border: 1px solid rgba(87,242,135,0.2); }
+
+    .badge-nobot { background: rgba(237,66,69,0.1); color: var(--danger); border: 1px solid rgba(237,66,69,0.2); }
+
+
+
+    .guild-action {
+
+      width: 100%; padding: 0.55rem 1rem; border-radius: 8px;
+
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+
+      cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+
+    }
+
+    .guild-action-manage { background: var(--accent); color: #fff; box-shadow: 0 0 14px var(--glow); }
+
+    .guild-action-manage:hover { background: #4752c4; transform: translateY(-1px); }
+
+    .guild-action-add { background: rgba(237,66,69,0.12); color: var(--danger); border: 1px solid rgba(237,66,69,0.25); }
+
+    .guild-action-add:hover { background: rgba(237,66,69,0.22); }
+
+
+
+    /* ── SKELETON ── */
+
+    .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+
+    .skeleton-card {
+
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+
+      padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.85rem;
+
+    }
+
+    .sk { background: linear-gradient(90deg, var(--surface2) 25%, #1a1a2e 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+
+    .sk-circle { border-radius: 50%; width: 64px; height: 64px; }
+
+    .sk-line-lg { width: 120px; height: 14px; }
+
+    .sk-line-sm { width: 80px; height: 11px; }
+
+    .sk-btn { width: 100%; height: 34px; border-radius: 8px; }
+
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+
+
+    .loading { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem; color: var(--muted); }
+
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  </style>
+
 </head>
+
 <body>
 
-    <!-- Barra de Navegación Superior -->
-    <nav class="navbar">
-        <a href="/" data-i18n="nav-home">Inicio</a>
-        <a href="/dashboard" data-i18n="nav-dashboard" style="color: #fff;">Panel</a>
-        <a href="/status" data-i18n="nav-status">Estado</a>
-        <a href="/commands" data-i18n="nav-commands">Comandos</a>
-    </nav>
+  <nav>
 
-    <!-- Contenedor del Selector de Idioma -->
-    <div class="lang-container">
-        <select id="lang-select" onchange="changeLanguage(this.value)">
-            <option value="es">🇪🇸 Español</option>
-            <option value="en">🇺🇸 English</option>
-        </select>
+    <div class="logo">Kaitrux</div>
+
+    <div class="user-info">
+
+      <img class="user-avatar" id="user-avatar" src="" alt="">
+
+      <span class="user-name" id="user-name">Cargando...</span>
+
+      <button class="logout-btn" onclick="logout()">Salir</button>
+
     </div>
 
-    <!-- Contenido Principal -->
-    <div class="container">
-        <div class="header-section">
-            <h1 data-i18n="dash-title">Tus Servidores</h1>
-            <p data-i18n="dash-subtitle">Selecciona un servidor para configurar el bot.</p>
-        </div>
+  </nav>
 
-        <!-- Lista de Servidores (Ejemplos estáticos que reemplazará tu Backend) -->
-        <div class="server-grid">
-            
-            <!-- Servidor donde el bot YA está presente -->
-            <div class="server-card">
-                <div class="server-icon" style="background-color: #5865f2;">GS</div>
-                <div class="server-name">Gaming Server</div>
-                <a href="/server?id=1122334455" class="btn-action btn-manage" data-i18n="dash-btn-manage">Configurar</a>
-            </div>
 
-            <!-- Servidor donde falta invitar al bot -->
-            <div class="server-card">
-                <div class="server-icon" style="background-color: #747f8d;">TS</div>
-                <div class="server-name">Test Server</div>
-                <a href="https://discord.com/api/oauth2/authorize?client_id=TU_BOT_ID&permissions=8&scope=bot" target="_blank" class="btn-action btn-invite" data-i18n="dash-btn-invite">Invitar Bot</a>
-            </div>
 
-        </div>
+  <main>
+
+    <div class="page-title">Tus Servidores</div>
+
+    <div class="page-sub">Selecciona un servidor para configurarlo.</div>
+
+    <div id="guilds-container">
+
+      <div class="skeleton-grid" id="skeleton-guilds">
+
+        <div class="skeleton-card"><div class="sk sk-circle"></div><div class="sk sk-line-lg"></div><div class="sk sk-line-sm"></div><div class="sk sk-btn"></div></div>
+
+        <div class="skeleton-card"><div class="sk sk-circle"></div><div class="sk sk-line-lg"></div><div class="sk sk-line-sm"></div><div class="sk sk-btn"></div></div>
+
+        <div class="skeleton-card"><div class="sk sk-circle"></div><div class="sk sk-line-lg"></div><div class="sk sk-line-sm"></div><div class="sk sk-btn"></div></div>
+
+        <div class="skeleton-card"><div class="sk sk-circle"></div><div class="sk sk-line-lg"></div><div class="sk sk-line-sm"></div><div class="sk sk-btn"></div></div>
+
+        <div class="skeleton-card"><div class="sk sk-circle"></div><div class="sk sk-line-lg"></div><div class="sk sk-line-sm"></div><div class="sk sk-btn"></div></div>
+
+        <div class="skeleton-card"><div class="sk sk-circle"></div><div class="sk sk-line-lg"></div><div class="sk sk-line-sm"></div><div class="sk sk-btn"></div></div>
+
+      </div>
+
     </div>
 
-    <!-- Script del Motor de Traducción -->
-    <script src="/js/translate.js"></script>
+  </main>
 
-    <!-- ⚠️ NOTA: Si tenías un script propio acá abajo para cargar los servidores reales desde tu API de Express con fetch(), NO LO BORRES, dejalo acá abajo intacto. -->
+
+
+  <script>
+
+    const API    = '';
+
+    const BOT_ID = '1200646197304631326';
+
+    const SESSION_KEY  = 'kaitrux_token';
+
+    const SESSION_EXP  = 'kaitrux_token_exp';
+
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+
+
+    // ── Sesión persistente 7 días ──
+
+    function saveToken(t) {
+
+      localStorage.setItem(SESSION_KEY, t);
+
+      localStorage.setItem(SESSION_EXP, Date.now() + SEVEN_DAYS_MS);
+
+    }
+
+    function getToken() {
+
+      const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
+
+      if (Date.now() > exp) { clearToken(); return null; }
+
+      return localStorage.getItem(SESSION_KEY);
+
+    }
+
+    function clearToken() {
+
+      localStorage.removeItem(SESSION_KEY);
+
+      localStorage.removeItem(SESSION_EXP);
+
+    }
+
+
+
+    const urlToken = new URLSearchParams(location.search).get('token');
+
+    if (urlToken) { saveToken(urlToken); history.replaceState({}, '', '/dashboard'); }
+
+    const token = getToken();
+
+    if (!token) { location.href = '/'; }
+
+
+
+    async function apiFetch(path) {
+
+      const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+
+      if (res.status === 401) { logout(); throw new Error('Unauthorized'); }
+
+      return res.json();
+
+    }
+
+
+
+    async function init() {
+
+      try {
+
+        const [user, guilds] = await Promise.all([ apiFetch('/api/me'), apiFetch('/api/guilds') ]);
+
+        document.getElementById('user-name').textContent = user.username;
+
+        document.getElementById('user-avatar').src = user.avatar
+
+          ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+
+          : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+
+
+        const container = document.getElementById('guilds-container');
+
+        if (!guilds.length) { container.innerHTML = '<div class="loading"><span>No tienes servidores con permisos de administrador.</span></div>'; return; }
+
+
+
+        const addUrl = `https://discord.com/oauth2/authorize?client_id=${BOT_ID}&permissions=8&scope=bot+applications.commands`;
+
+
+
+        container.innerHTML = `<div class="guilds-grid">${guilds.map((g, i) => `
+
+          <div class="guild-card ${g.hasBot ? 'has-bot' : 'no-bot'}" style="animation-delay:${i*0.05}s">
+
+            ${g.icon
+
+              ? `<img class="guild-icon" src="${g.icon}" alt="${g.name}">`
+
+              : `<div class="guild-icon-placeholder">${g.name.charAt(0).toUpperCase()}</div>`}
+
+            <div class="guild-name">${g.name}</div>
+
+            <span class="badge ${g.hasBot ? 'badge-bot' : 'badge-nobot'}">${g.hasBot ? '✓ Bot activo' : '✗ Sin bot'}</span>
+
+            ${g.hasBot
+
+              ? `<a href="/server?id=${g.id}" class="guild-action guild-action-manage">⚙️ Administrar</a>`
+
+              : `<a href="${addUrl}&guild_id=${g.id}" target="_blank" class="guild-action guild-action-add">➕ Añadir Bot</a>`
+
+            }
+
+          </div>`).join('')}</div>`;
+
+      } catch (e) {
+
+        if (e.message !== 'Unauthorized') document.getElementById('guilds-container').innerHTML = '<div class="loading"><span>Error al cargar los servidores.</span></div>';
+
+      }
+
+    }
+
+
+
+    function logout() { clearToken(); location.href = '/'; }
+
+
+
+    init();
+
+  </script>
 
 </body>
+
 </html>
