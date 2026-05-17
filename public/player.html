@@ -400,7 +400,7 @@
 
   async function playerAction(action, body = {}) {
     try {
-      await apiFetch(`/api/player/${currentGuildId}/${action}`, {
+      await apiFetch(`http://51.83.6.5:20046/api/player/${currentGuildId}/${action}`, {
         method: 'POST',
         body: JSON.stringify(body)
       });
