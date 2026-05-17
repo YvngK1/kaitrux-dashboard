@@ -117,7 +117,7 @@
     .lyrics-empty { display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:3rem 1.5rem;color:var(--muted);text-align:center;font-size:0.88rem; }
     .lyrics-loading { display:flex;align-items:center;gap:0.6rem;padding:2rem;color:var(--muted);font-size:0.85rem; }
     .lyrics-spinner { width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0; }
-    
+
     /* Clases dinámicas para manejar el Grid de MAIN */
     .has-lyrics { grid-template-columns: 1fr 320px 320px !important; max-width: 1300px !important; }
 
@@ -251,16 +251,16 @@
     pollInterval = setInterval(loadPlayer, 5000);
   }
 
-  async function load() {
+  async function loadPlayer() {
     if (!currentGuildId) return;
     try {
-      const data = await apiFetch(`/api//${currentGuildId}`);
-      render(data);
+      const data = await apiFetch(`/api/player/${currentGuildId}`);
+      renderPlayer(data);
       document.getElementById('refresh-label').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
     } catch {}
   }
 
-  function render(data) {
+  function renderPlayer(data) {
     const main = document.getElementById('main-content');
     const topContainer = document.getElementById('top-container');
 
@@ -268,9 +268,9 @@
       resetLyrics();
       main.classList.remove('has-lyrics');
       if(topContainer) topContainer.style.maxWidth = "1100px";
-      
+
       main.innerHTML = `
-        <div class="-card" style="grid-column:1/-1">
+        <div class="player-card" style="grid-column:1/-1">
           <div class="inactive-state">
             <div class="inactive-icon">🎵</div>
             <div class="inactive-text">No hay música reproduciéndose en este servidor.</div>
@@ -451,6 +451,8 @@
 
     // Si es la misma canción, verificamos si el contenedor se vació por el render
     if (key === lyricsTrack) {
+      if (lyricsLines.length && !lyricsTimer && isPlaying) {
+        startLyricsTimer();
       if (lyricsLines.length && (body.querySelector('.lyrics-loading') || !body.innerHTML.trim())) {
         main.classList.add('has-lyrics');
         if(topContainer) topContainer.style.maxWidth = "1300px";
@@ -472,6 +474,9 @@
     lyricsTrack = key;
     resetLyrics();
 
+    const body = document.getElementById('lyrics-body');
+    if (!body) return;
+
     try {
       const q = new URLSearchParams({ track_name: title, artist_name: artist });
       const res = await fetch(`https://lrclib.net/api/get?${q}`);
@@ -482,7 +487,7 @@
       if (data.syncedLyrics) {
         lyricsLines = parseLRC(data.syncedLyrics);
         document.getElementById('lyrics-source').textContent = 'sincronizadas';
-        
+
         main.classList.add('has-lyrics');
         if(topContainer) topContainer.style.maxWidth = "1300px";
 
@@ -492,7 +497,7 @@
       else if (data.plainLyrics) {
         plainLyrics = data.plainLyrics;
         document.getElementById('lyrics-source').textContent = 'sin sincronizar';
-        
+
         main.classList.add('has-lyrics');
         if(topContainer) topContainer.style.maxWidth = "1300px";
 
@@ -536,7 +541,7 @@
       if (newIdx !== currentLineIdx && newIdx !== -1) {
         currentLineIdx = newIdx;
         const linesElements = document.querySelectorAll('.lyric-line');
-        
+
         linesElements.forEach((el, i) => {
           el.className = 'lyric-line';
           if (i < newIdx) {
