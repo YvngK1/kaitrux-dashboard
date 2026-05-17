@@ -251,16 +251,16 @@
     pollInterval = setInterval(loadPlayer, 5000);
   }
 
-  async function loadPlayer() {
+  async function load() {
     if (!currentGuildId) return;
     try {
-      const data = await apiFetch(`/api/player/${currentGuildId}`);
-      renderPlayer(data);
+      const data = await apiFetch(`/api//${currentGuildId}`);
+      render(data);
       document.getElementById('refresh-label').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
     } catch {}
   }
 
-  function renderPlayer(data) {
+  function render(data) {
     const main = document.getElementById('main-content');
     const topContainer = document.getElementById('top-container');
 
@@ -270,7 +270,7 @@
       if(topContainer) topContainer.style.maxWidth = "1100px";
       
       main.innerHTML = `
-        <div class="player-card" style="grid-column:1/-1">
+        <div class="-card" style="grid-column:1/-1">
           <div class="inactive-state">
             <div class="inactive-icon">🎵</div>
             <div class="inactive-text">No hay música reproduciéndose en este servidor.</div>
@@ -400,7 +400,7 @@
 
   async function playerAction(action, body = {}) {
     try {
-      await apiFetch(`/api/player/${currentGuildId}/${action}`, {
+      await apiFetch(`http://51.83.6.5:20046/api/player/${currentGuildId}/${action}`, {
         method: 'POST',
         body: JSON.stringify(body)
       });
