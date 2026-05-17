@@ -252,9 +252,9 @@
   }
 
   async function loadPlayer() {
-    if (!GuildId) return;
+    if (!currentGuildId) return;
     try {
-      const data = await apiFetch(`http://51.83.6.5:20046/player/${currentGuildId}`);
+      const data = await apiFetch(`/api/player/${currentGuildId}`);
       renderPlayer(data);
       document.getElementById('refresh-label').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
     } catch {}
@@ -400,7 +400,7 @@
 
   async function playerAction(action, body = {}) {
     try {
-      await apiFetch(`http://51.83.6.5:20046/api/player/${currentGuildId}/${action}`, {
+      await apiFetch(`/api/player/${currentGuildId}/${action}`, {
         method: 'POST',
         body: JSON.stringify(body)
       });
