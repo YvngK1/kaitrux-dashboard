@@ -9,8 +9,8 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg:#080810;--surface:#0f0f1a;--border:rgba(255,255,255,0.07);--accent:#5865F2;--accent2:#eb459e;--text:#e8e8f0;--muted:#6b6b8a;--glow:rgba(88,101,242,0.35); }
-    html { scroll-behavior: smooth; }
-    body { background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;min-height:100vh;overflow-x:hidden; }
+    html { scroll-behavior: smooth; }S
+    body { background:var(--bg);color:var(--text);font-family:"DM ans",sans-serif;min-height:100vh;overflow-x:hidden; }
     body::before { content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0; }
     .bg-glow{position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
     .bg-glow-1{background:rgba(88,101,242,0.15);top:-200px;left:-200px;}
@@ -212,15 +212,17 @@
   <script src="/js/translate.js"></script>
 
   <script>
-    // ── Player button ──────────────────────────────────────────────────────
-    document.getElementById('btn-player').addEventListener('click', async function(e) {
-      e.preventDefault();
-      try {
-        const res = await fetch('/api/me');
-        if (res.ok) { window.location.href = '/dashboard'; }
-        else { window.location.href = '/api/auth/login'; }
-      } catch (_) { window.location.href = '/api/auth/login'; }
+// DESPUÉS:
+document.getElementById('btn-player').addEventListener('click', async function(e) {
+  e.preventDefault();
+  try {
+    const res = await fetch('/api/me', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('kaitrux_token') || ''}` }
     });
+    if (res.ok) { window.location.href = '/player'; }
+    else { window.location.href = '/api/auth/login?redirect=/player'; }
+  } catch (_) { window.location.href = '/api/auth/login?redirect=/player'; }
+});
 
     // ── Hamburger ──────────────────────────────────────────────────────────
     function toggleMenu() {
