@@ -308,18 +308,56 @@ async function botFetch(path, opts = {}) {
     }
 }
 
-app.get('/api/player/:guildId', authMiddleware, async (req, res) => {
-    const data = await botFetch(`/player/${req.params.guildId}`);
-    if (!data) return res.status(503).json({ error: 'El servicio del bot de música no se encuentra disponible.' });
-    res.json(data);
-});
+app.get('/api/guilds', authMiddleware, async (req, res) => {
+    try {
+        const uRes = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+            headers: {
+                Authorization: `Bearer ${req.user.discordToken}`
+            }
+        });
 
-app.post('/api/player/:guildId/:action', authMiddleware, async (req, res) => {
-    const data = await botFetch(`/player/${req.params.guildId}/${req.params.action}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body),
-    });
-    if (!data) return res.status(503).json({ error: 'No se pudo enviar la acción. El bot de música no responde.' });
-    res.json(data);
+        if (!uRes.ok) {
+            return res.status(401).json({ error: 'Token inválido' });
+        }
+
+        const guilds = await uRes.json();
+
+        // 🔥 BOT GUILDS (CORRECTO: desde TU BOT, no Discord API)
+        let botIds = new Set();
+
+        try {
+            const bRes = await fetch(`${process.env.BOT_STATUS_URL}/guilds`);
+            if (bRes.ok) {
+                const data = await bRes.json();
+                botIds = new Set(data);
+            }
+        } catch {}
+
+        const ADMIN = BigInt(0x8);
+
+        const result = guilds
+            .filter(g => {
+                try {
+                    return (BigInt(g.permissions) & ADMIN) === ADMIN;
+                } catch {
+                    return false;
+                }
+            })
+            .map(g => ({
+                id: g.id,
+                name: g.name,
+                icon: g.icon
+                    ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png`
+                    : null,
+                hasBot: botIds.has(g.id)
+            }));
+
+        res.json(result);
+
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Error guilds' });
+    }
 });
 
 // ── API — STATUS Y MONITOREO ──────────────────────────────────────────────────
