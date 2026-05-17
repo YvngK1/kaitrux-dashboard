@@ -252,7 +252,7 @@
   }
 
   async function loadPlayer() {
-    if (!currentGuildId) return;
+    if (!GuildId) return;
     try {
       const data = await apiFetch(`http://51.83.6.5:20046/player/${currentGuildId}`);
       renderPlayer(data);
