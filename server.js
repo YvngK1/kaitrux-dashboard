@@ -182,21 +182,30 @@ app.get('/api/user/:userId', authMiddleware, async (req, res) => {
 
 app.get('/api/guilds', authMiddleware, async (req, res) => {
     try {
-        const [uRes, bRes] = await Promise.all([
-            fetch(`${DISCORD_API}/users/@me/guilds`, { headers: { Authorization: `Bearer ${req.user.discordToken}` } }),
-            fetch(`${DISCORD_API}/users/@me/guilds`, { headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` } }),
-        ]);
-        const guilds    = await uRes.json();
-        const botGuilds = await bRes.json();
-        const botIds    = new Set(botGuilds.map(g => g.id));
-        
-        res.json(guilds
-            .filter(g => (BigInt(g.permissions) & BigInt(0x8)) === BigInt(0x8)) // Verificar permiso ADMINISTRATOR
-            .map(g => ({ id: g.id, name: g.name, icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null, hasBot: botIds.has(g.id) }))
-        );
-    } catch (e) { res.status(500).json({ error: 'Error al procesar servidores asociados.' }); }
-});
+        const uRes = await fetch(`${DISCORD_API}/users/@me/guilds`, {
+            headers: { Authorization: `Bearer ${req.user.discordToken}` }
+        });
+        const guilds = await uRes.json();
 
+        const userGuilds = guilds.filter(g => (BigInt(g.permissions) & BigInt(0x8)) === BigInt(0x8));
+
+        const guildsWithBot = await Promise.all(userGuilds.map(async g => {
+            const r = await fetch(`${DISCORD_API}/guilds/${g.id}`, {
+                headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` }
+            });
+            return {
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
+                hasBot: r.ok
+            };
+        }));
+
+        res.json(guildsWithBot);
+    } catch (e) {
+        res.status(500).json({ error: 'Error al procesar servidores asociados.' });
+    }
+});
 // ── API — PREFIX ──────────────────────────────────────────────────────────────
 app.get('/api/guilds/:guildId/config', authMiddleware, async (req, res) => {
     const doc = await Prefix.findOne({ guildId: req.params.guildId });
