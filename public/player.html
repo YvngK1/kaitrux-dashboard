@@ -29,59 +29,63 @@
     }
     body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
     body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0; }
-
+ 
     /* NAV */
     nav { position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border); }
     .logo { font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
     .back-btn { color:var(--muted);text-decoration:none;font-size:0.88rem;transition:color 0.2s;display:flex;align-items:center;gap:0.4rem; }
     .back-btn:hover { color:var(--text); }
-
+ 
+    /* TOP CONTAINER */
+    #top-container { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 2rem 0;transition:max-width 0.4s ease; }
+    #top-container.expanded { max-width:1340px; }
+ 
     /* LAYOUT */
-    main { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start; }
-
+    main { position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;transition:max-width 0.4s ease; }
+    main.has-lyrics { grid-template-columns:1fr 320px 320px;max-width:1340px; }
+ 
     /* PLAYER CARD */
     .player-card { background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2.5rem;position:relative;overflow:hidden; }
     .player-bg { position:absolute;inset:0;z-index:0;opacity:0.08;filter:blur(60px);background-size:cover;background-position:center;transition:background-image 0.5s; }
-
+ 
     /* ALBUM ART */
     .album-wrap { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2rem; }
     .album-art { width:260px;height:260px;border-radius:16px;object-fit:cover;box-shadow:0 20px 60px rgba(0,0,0,0.5);transition:all 0.4s;border:1px solid var(--border); }
     .album-art.playing { animation:float 3s ease-in-out infinite; }
     .album-placeholder { width:260px;height:260px;border-radius:16px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:5rem;border:1px solid var(--border); }
-
+ 
     /* TRACK INFO */
     .track-info { text-align:center;width:100%; }
     .track-title { font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .track-author { color:var(--muted);font-size:0.95rem;margin-bottom:0.5rem; }
     .track-requester { font-size:0.78rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:0.2rem 0.7rem;border-radius:100px;display:inline-block; }
-
+ 
     /* PROGRESS */
     .progress-section { width:100%;margin-top:1rem; }
     .progress-times { display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem; }
     .progress-bar { width:100%;height:4px;background:var(--surface2);border-radius:100px;cursor:pointer;position:relative;transition:height 0.2s; }
     .progress-bar:hover { height:6px; }
-    .progress-fill { height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));pointer-events:none; }
-
+    .progress-fill { height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));pointer-events:none;transition:width 0.1s linear; }
+ 
     /* CONTROLS */
     .controls { display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:1.5rem; }
-    .ctrl-btn { background:none;border:none;cursor:pointer;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;justify-content:center;border-radius:50%;padding:0.5rem; }
+    .ctrl-btn { background:none;border:none;cursor:pointer;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;justify-content:center;border-radius:50%;padding:0.5rem;font-size:1.2rem; }
     .ctrl-btn:hover { color:var(--text);transform:scale(1.1); }
-    .ctrl-btn.play-btn { background:linear-gradient(135deg,var(--accent),#7b68ee);color:#fff;width:56px;height:56px;box-shadow:0 0 24px var(--glow);border-radius:50%;padding:0; }
+    .ctrl-btn.play-btn { background:linear-gradient(135deg,var(--accent),#7b68ee);color:#fff;width:56px;height:56px;box-shadow:0 0 24px var(--glow);border-radius:50%;padding:0;font-size:1.4rem; }
     .ctrl-btn.play-btn:hover { transform:scale(1.08);box-shadow:0 0 40px rgba(88,101,242,0.6); }
-    .ctrl-btn svg { pointer-events:none; }
-
+    .ctrl-btn:disabled { opacity:0.3;cursor:not-allowed;transform:none; }
+ 
     /* VOLUME */
     .volume-row { display:flex;align-items:center;gap:0.75rem;margin-top:1.2rem; }
     .volume-icon { color:var(--muted);font-size:1rem;flex-shrink:0; }
     .volume-slider { flex:1;-webkit-appearance:none;height:4px;border-radius:100px;background:var(--surface2);outline:none;cursor:pointer; }
     .volume-slider::-webkit-slider-thumb { -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--glow); }
     .volume-val { font-size:0.78rem;color:var(--muted);min-width:30px;text-align:right; }
-
+ 
     /* INACTIVE */
     .inactive-state { display:flex;flex-direction:column;align-items:center;gap:1rem;padding:3rem;color:var(--muted);text-align:center; }
     .inactive-icon { font-size:4rem;opacity:0.3; }
-    .inactive-text { font-size:1rem; }
-
+ 
     /* QUEUE */
     .queue-card { background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden;position:sticky;top:80px; }
     .queue-header { padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
@@ -91,30 +95,27 @@
     .queue-list::-webkit-scrollbar { width:4px; }
     .queue-list::-webkit-scrollbar-track { background:transparent; }
     .queue-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:100px; }
-    .queue-item { display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;border-radius:10px;transition:background 0.2s;cursor:default; }
+    .queue-item { display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.75rem;border-radius:10px;transition:background 0.2s; }
     .queue-item:hover { background:var(--surface2); }
     .queue-item.current { background:rgba(88,101,242,0.1);border:1px solid rgba(88,101,242,0.2); }
     .queue-num { font-size:0.75rem;color:var(--muted);min-width:20px;text-align:center; }
-    .queue-thumb { width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface2); }
+    .queue-thumb { width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center; }
     .queue-info { flex:1;min-width:0; }
     .queue-name { font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .queue-artist { font-size:0.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .queue-dur { font-size:0.72rem;color:var(--muted);flex-shrink:0;font-family:monospace; }
     .now-badge { font-size:0.65rem;background:rgba(88,101,242,0.2);color:var(--accent);padding:0.1rem 0.5rem;border-radius:100px;flex-shrink:0; }
-
+ 
     /* SPINNER */
     .loading { display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:3rem;color:var(--muted); }
     .spinner { width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
-
+ 
     /* SERVER SELECTOR */
-    .server-selector { position:relative;z-index:1;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap; }
+    .server-selector { display:flex;align-items:center;gap:1rem;flex-wrap:wrap; }
     .server-select { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.6rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;cursor:pointer;min-width:200px; }
     .server-select:focus { border-color:var(--accent); }
     .server-select option { background:var(--surface2); }
-
-    @keyframes spin { to { transform:rotate(360deg); } }
-    @keyframes float { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(1deg)} }
-
+ 
     /* LYRICS */
     .lyrics-card { background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden;position:sticky;top:80px;max-height:620px;display:flex;flex-direction:column; }
     .lyrics-header { padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
@@ -124,19 +125,20 @@
     .lyrics-body::-webkit-scrollbar { width:4px; }
     .lyrics-body::-webkit-scrollbar-track { background:transparent; }
     .lyrics-body::-webkit-scrollbar-thumb { background:var(--border);border-radius:100px; }
-    .lyric-line { font-size:0.92rem;line-height:1.9;color:var(--muted);transition:all 0.35s ease;cursor:default;border-radius:6px;padding:0.1rem 0.5rem;margin:0 -0.5rem; }
-    .lyric-line.active { font-size:1rem;font-weight:600;color:#fff;background:rgba(88,101,242,0.12);border-left:3px solid var(--accent);padding-left:0.75rem; }
-    .lyric-line.past { color:rgba(255,255,255,0.3); }
+    .lyric-line { font-size:0.92rem;line-height:2;color:var(--muted);transition:color 0.3s ease, font-size 0.3s ease, font-weight 0.3s ease, background 0.3s ease;cursor:default;border-radius:6px;padding:0.1rem 0.5rem;margin:0 -0.5rem;border-left:3px solid transparent; }
+    .lyric-line.active { font-size:1.05rem;font-weight:700;color:#fff;background:rgba(88,101,242,0.1);border-left:3px solid var(--accent);padding-left:0.75rem; }
+    .lyric-line.past { color:rgba(255,255,255,0.2); }
     .lyrics-empty { display:flex;flex-direction:column;align-items:center;gap:0.75rem;padding:3rem 1.5rem;color:var(--muted);text-align:center;font-size:0.88rem; }
     .lyrics-loading { display:flex;align-items:center;gap:0.6rem;padding:2rem;color:var(--muted);font-size:0.85rem; }
     .lyrics-spinner { width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0; }
-    
-    /* Clases dinámicas para manejar el Grid de MAIN */
-    .has-lyrics { grid-template-columns: 1fr 320px 320px !important; max-width: 1300px !important; }
-
-    @media(max-width:950px) { 
-      main { grid-template-columns: 1fr !important; } 
-      .queue-card, .lyrics-card { position: static; max-height: 400px; } 
+ 
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(1deg)} }
+ 
+    @media(max-width:950px) {
+      main, main.has-lyrics { grid-template-columns:1fr !important;max-width:100% !important; }
+      #top-container, #top-container.expanded { max-width:100% !important; }
+      .queue-card, .lyrics-card { position:static;max-height:400px; }
     }
   </style>
 </head>
@@ -145,8 +147,8 @@
     <div class="logo">Kaitrux</div>
     <a href="/dashboard.html" class="back-btn">← Dashboard</a>
   </nav>
-
-  <div style="position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 2rem 0" id="top-container">
+ 
+  <div id="top-container">
     <div style="margin-bottom:0.3rem;font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800">🎵 Player</div>
     <div style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem">Controlá la música de tu servidor en tiempo real.</div>
     <div class="server-selector">
@@ -156,16 +158,16 @@
       <span style="font-size:0.82rem;color:var(--muted)" id="refresh-label"></span>
     </div>
   </div>
-
+ 
   <main id="main-content">
     <div style="grid-column:1/-1" class="loading"><div class="spinner"></div> Cargando servidores...</div>
   </main>
-
+ 
 <script>
   const API = '';
   const SESSION_KEY = 'kaitrux_token';
   const SESSION_EXP = 'kaitrux_token_exp';
-
+ 
   function getToken() {
     const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
     if (Date.now() > exp) {
@@ -175,29 +177,32 @@
     }
     return localStorage.getItem(SESSION_KEY);
   }
-
+ 
   const token = getToken();
   if (!token) location.href = '/';
-
-  let currentGuildId = null;
-  let pollInterval = null;
-
-  let position = 0;
-  let duration = 0;
-  let isPlaying = false;
-  let positionTimer = null;
-
+ 
+  // ── STATE ────────────────────────────────────────────────────────────────
+  let currentGuildId   = null;
+  let pollInterval     = null;
+ 
+  // Posición interpolada
+  let serverPosition   = 0;   // última posición recibida del servidor
+  let serverTimestamp  = 0;   // timestamp local cuando se recibió
+  let duration         = 0;
+  let isPlaying        = false;
+ 
   // Letras
-  let lyricsLines = [];
-  let plainLyrics = '';
-  let lyricsTrack = '';
-  let lyricsTimer = null;
-  let currentLineIdx = -1;
-
-  // Sincronización básica
-  let lastServerPosition = 0;
-  let lastServerTimestamp = 0;
-
+  let lyricsLines      = [];
+  let plainLyrics      = '';
+  let lyricsTrackKey   = '';  // "title|||artist"
+  let lyricsRafId      = null;
+  let currentLineIdx   = -1;
+  let lyricsReady      = false; // ¿ya tenemos letras sincronizadas?
+ 
+  // Track actual
+  let currentTrackUri  = '';
+ 
+  // ── HELPERS ──────────────────────────────────────────────────────────────
   async function apiFetch(path, opts = {}) {
     const res = await fetch(`${API}${path}`, {
       ...opts,
@@ -207,7 +212,6 @@
         ...(opts.headers || {})
       }
     });
-
     if (res.status === 401) {
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(SESSION_EXP);
@@ -215,27 +219,35 @@
     }
     return res.json();
   }
-
+ 
   function fmtTime(ms) {
     if (!ms || ms < 0) return '0:00';
     const s = Math.floor(ms / 1000);
     const m = Math.floor(s / 60);
     return `${m}:${String(s % 60).padStart(2, '0')}`;
   }
-
+ 
+  // Posición interpolada: suma el tiempo transcurrido localmente desde el último poll
+  function getInterpolatedPosition() {
+    if (!isPlaying) return serverPosition;
+    const elapsed = Date.now() - serverTimestamp;
+    return Math.min(serverPosition + elapsed, duration);
+  }
+ 
+  // ── GUILDS ───────────────────────────────────────────────────────────────
   async function loadGuilds() {
     try {
       const guilds = await apiFetch('/api/guilds');
       const select = document.getElementById('guild-select');
       const active = guilds.filter(g => g.hasBot);
-
+ 
       active.forEach(g => {
         const opt = document.createElement('option');
         opt.value = g.id;
         opt.textContent = g.name;
         select.appendChild(opt);
       });
-
+ 
       if (active.length === 1) {
         select.value = active[0].id;
         selectGuild(active[0].id);
@@ -244,337 +256,423 @@
           <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:4rem;color:var(--muted);text-align:center">
             <div style="font-size:3rem">🎵</div>
             <div>Seleccioná un servidor para ver el player.</div>
-          </div>
-        `;
+          </div>`;
       }
     } catch {
       document.getElementById('main-content').innerHTML = `<div style="grid-column:1/-1" class="loading">Error al cargar servidores.</div>`;
     }
   }
-
+ 
   function selectGuild(guildId) {
     if (!guildId) return;
     currentGuildId = guildId;
-
     clearInterval(pollInterval);
-    clearInterval(positionTimer);
-    resetLyrics();
-
+    stopLyricsLoop();
+    resetLyricsState();
+    currentTrackUri = '';
     loadPlayer();
     pollInterval = setInterval(loadPlayer, 5000);
   }
-
+ 
+  // ── PLAYER POLL ──────────────────────────────────────────────────────────
   async function loadPlayer() {
     if (!currentGuildId) return;
     try {
       const data = await apiFetch(`/api/player/${currentGuildId}`);
-      renderPlayer(data);
+      handlePlayerData(data);
       document.getElementById('refresh-label').textContent = `Actualizado: ${new Date().toLocaleTimeString('es')}`;
     } catch {}
   }
-
-  function renderPlayer(data) {
-    const main = document.getElementById('main-content');
-    const topContainer = document.getElementById('top-container');
-
+ 
+  function handlePlayerData(data) {
     if (!data || !data.active) {
-      resetLyrics();
-      main.classList.remove('has-lyrics');
-      if(topContainer) topContainer.style.maxWidth = "1100px";
-      
-      main.innerHTML = `
-        <div class="player-card" style="grid-column:1/-1">
-          <div class="inactive-state">
-            <div class="inactive-icon">🎵</div>
-            <div class="inactive-text">No hay música reproduciéndose en este servidor.</div>
-            <div style="font-size:0.82rem">Usá <strong>!play</strong> en Discord para empezar.</div>
-          </div>
-        </div>
-      `;
+      renderInactive();
       return;
     }
-
-    const track = data.currentTrack;
-    isPlaying = data.isPlaying && !data.isPaused;
-
-    lastServerPosition = data.position || 0;
-    lastServerTimestamp = Date.now();
-    position = lastServerPosition;
-    duration = track?.duration || 0;
-
-    clearInterval(positionTimer);
-
-    if (isPlaying) {
-      positionTimer = setInterval(() => {
-        const elapsed = Date.now() - lastServerTimestamp;
-        position = lastServerPosition + elapsed;
-        if (position > duration) position = duration;
-        updateProgress();
-      }, 100);
+ 
+    const track    = data.currentTrack;
+    const newUri   = track?.uri || '';
+    const trackChanged = newUri !== currentTrackUri;
+ 
+    // Actualizar estado de posición (siempre)
+    isPlaying       = data.isPlaying && !data.isPaused;
+    serverPosition  = data.position || 0;
+    serverTimestamp = Date.now();
+    duration        = track?.duration || 0;
+ 
+    if (trackChanged) {
+      // Canción nueva: re-render completo y buscar letras
+      currentTrackUri = newUri;
+      renderPlayer(data);
+      const key = `${track?.title || ''}|||${track?.author || ''}`.toLowerCase();
+      if (key !== lyricsTrackKey) {
+        stopLyricsLoop();
+        resetLyricsState();
+        lyricsTrackKey = key;
+        fetchLyrics(track?.title || '', track?.author || '');
+      }
+    } else {
+      // Misma canción: solo actualizar UI parcialmente (sin tocar el DOM de lyrics)
+      updatePlayerUI(data);
     }
-
-    const thumb = track?.thumbnail || '';
-    const pct = duration ? Math.min((position / duration) * 100, 100) : 0;
-
+  }
+ 
+  // ── RENDER COMPLETO (solo cuando cambia la canción o estado inactivo→activo) ──
+  function renderInactive() {
+    stopLyricsLoop();
+    resetLyricsState();
+    currentTrackUri = '';
+    lyricsTrackKey  = '';
+ 
+    const main = document.getElementById('main-content');
+    const top  = document.getElementById('top-container');
+    main.className = '';
+    top.className  = '';
+ 
     main.innerHTML = `
-      <div class="player-card">
-        <div class="player-bg" style="background-image:url('${thumb}')"></div>
+      <div class="player-card" style="grid-column:1/-1">
+        <div class="inactive-state">
+          <div class="inactive-icon">🎵</div>
+          <div style="font-size:1rem">No hay música reproduciéndose en este servidor.</div>
+          <div style="font-size:0.82rem">Usá <strong>!play</strong> en Discord para empezar.</div>
+        </div>
+      </div>`;
+  }
+ 
+  function renderPlayer(data) {
+    const track = data.currentTrack;
+    const thumb = track?.thumbnail || '';
+    const pos   = getInterpolatedPosition();
+    const pct   = duration ? Math.min((pos / duration) * 100, 100) : 0;
+ 
+    const main = document.getElementById('main-content');
+    const top  = document.getElementById('top-container');
+ 
+    // Por ahora sin letras hasta que carguen
+    main.className = '';
+    top.className  = '';
+ 
+    main.innerHTML = `
+      <div class="player-card" id="player-card">
+        <div class="player-bg" id="player-bg" style="background-image:url('${thumb}')"></div>
         <div class="album-wrap">
-          ${thumb ? `<img class="album-art ${isPlaying ? 'playing' : ''}" src="${thumb}" alt="cover">` : `<div class="album-placeholder">🎵</div>`}
+          ${thumb
+            ? `<img class="album-art${isPlaying ? ' playing' : ''}" id="album-art" src="${thumb}" alt="cover">`
+            : `<div class="album-placeholder" id="album-art">🎵</div>`}
           <div class="track-info">
-            <div class="track-title" title="${track?.title || ''}">${track?.title || 'Sin título'}</div>
-            <div class="track-author">${track?.author || 'Artista desconocido'}</div>
-            ${track?.requester ? `<span class="track-requester">Pedido por ${track.requester}</span>` : ''}
+            <div class="track-title" title="${esc(track?.title || '')}">${esc(track?.title || 'Sin título')}</div>
+            <div class="track-author">${esc(track?.author || 'Artista desconocido')}</div>
+            ${track?.requester ? `<span class="track-requester">Pedido por ${esc(track.requester)}</span>` : ''}
           </div>
-
+ 
           <div class="progress-section">
             <div class="progress-times">
-              <span id="pos-label">${fmtTime(position)}</span>
+              <span id="pos-label">${fmtTime(pos)}</span>
               <span>${track?.isStream ? '🔴 En vivo' : fmtTime(duration)}</span>
             </div>
-            <div class="progress-bar" onclick="seekTo(event, this)">
+            <div class="progress-bar" id="progress-bar" onclick="seekTo(event, this)">
               <div class="progress-fill" id="progress-fill" style="width:${pct}%"></div>
             </div>
           </div>
-
+ 
           <div class="controls">
-            <button class="ctrl-btn" onclick="playerAction('previous')" title="Anterior">⏮</button>
-            <button class="ctrl-btn play-btn" onclick="togglePlay()">${isPlaying ? '⏸' : '▶'}</button>
+            <button class="ctrl-btn" id="btn-prev" onclick="playerAction('previous')" title="Anterior">⏮</button>
+            <button class="ctrl-btn play-btn" id="btn-play" onclick="togglePlay()">${isPlaying ? '⏸' : '▶'}</button>
             <button class="ctrl-btn" onclick="playerAction('skip')" title="Siguiente">⏭</button>
             <button class="ctrl-btn" onclick="playerAction('stop')" title="Detener">⏹</button>
           </div>
-
+ 
           <div class="volume-row">
             <span class="volume-icon">🔈</span>
-            <input type="range" class="volume-slider" min="0" max="100" value="${data.volume || 100}" oninput="setVolume(this.value)">
-            <span class="volume-val" id="vol-val">${data.volume || 100}</span>
+            <input type="range" class="volume-slider" min="0" max="100" value="${data.volume ?? 100}" oninput="setVolume(this.value)">
+            <span class="volume-val" id="vol-val">${data.volume ?? 100}</span>
           </div>
         </div>
       </div>
-
+ 
       <div class="queue-card">
         <div class="queue-header">
           <span class="queue-title">Cola</span>
-          <span class="queue-count">${data.queueLength || 0} canciones</span>
+          <span class="queue-count" id="queue-count">${data.queueLength || 0} canciones</span>
         </div>
-        <div class="queue-list">
-          <div class="queue-item current">
-            <span class="queue-num">▶</span>
-            ${thumb ? `<img class="queue-thumb" src="${thumb}">` : `<div class="queue-thumb">🎵</div>`}
-            <div class="queue-info">
-              <div class="queue-name">${track?.title || 'Sin título'}</div>
-              <div class="queue-artist">${track?.author || ''}</div>
-            </div>
-            <span class="now-badge">NOW</span>
-          </div>
-          ${(data.queue || []).map((t, i) => `
-            <div class="queue-item">
-              <span class="queue-num">${i + 1}</span>
-              ${t.thumbnail ? `<img class="queue-thumb" src="${t.thumbnail}">` : `<div class="queue-thumb">🎵</div>`}
-              <div class="queue-info">
-                <div class="queue-name">${t.title || 'Sin título'}</div>
-                <div class="queue-artist">${t.author || ''}</div>
-              </div>
-              <span class="queue-dur">${t.isStream ? '🔴' : fmtTime(t.duration)}</span>
-            </div>
-          `).join('')}
+        <div class="queue-list" id="queue-list">
+          ${renderQueueHTML(data, track, thumb)}
         </div>
       </div>
-
-      <div class="lyrics-card">
+ 
+      <div class="lyrics-card" id="lyrics-card" style="display:none">
         <div class="lyrics-header">
           <span class="lyrics-title">🎶 Letras</span>
           <span class="lyrics-source" id="lyrics-source"></span>
         </div>
         <div class="lyrics-body" id="lyrics-body">
-          <div class="lyrics-loading">
-            <div class="lyrics-spinner"></div> Buscando letras...
-          </div>
+          <div class="lyrics-loading"><div class="lyrics-spinner"></div> Buscando letras...</div>
         </div>
-      </div>
-    `;
-
-    loadLyrics(track?.title || '', track?.author || '');
+      </div>`;
+ 
+    // Iniciar loop de progreso
+    startProgressLoop();
   }
-
-  function updateProgress() {
-    const fill = document.getElementById('progress-fill');
-    const label = document.getElementById('pos-label');
-    if (!fill || !label) return;
-
-    const pct = duration ? Math.min((position / duration) * 100, 100) : 0;
-    fill.style.width = pct + '%';
-    label.textContent = fmtTime(position);
+ 
+  function renderQueueHTML(data, track, thumb) {
+    const currentItem = `
+      <div class="queue-item current">
+        <span class="queue-num">▶</span>
+        ${thumb ? `<img class="queue-thumb" src="${thumb}">` : `<div class="queue-thumb">🎵</div>`}
+        <div class="queue-info">
+          <div class="queue-name">${esc(track?.title || 'Sin título')}</div>
+          <div class="queue-artist">${esc(track?.author || '')}</div>
+        </div>
+        <span class="now-badge">NOW</span>
+      </div>`;
+ 
+    const queueItems = (data.queue || []).map((t, i) => `
+      <div class="queue-item">
+        <span class="queue-num">${i + 1}</span>
+        ${t.thumbnail ? `<img class="queue-thumb" src="${t.thumbnail}">` : `<div class="queue-thumb">🎵</div>`}
+        <div class="queue-info">
+          <div class="queue-name">${esc(t.title || 'Sin título')}</div>
+          <div class="queue-artist">${esc(t.author || '')}</div>
+        </div>
+        <span class="queue-dur">${t.isStream ? '🔴' : fmtTime(t.duration)}</span>
+      </div>`).join('');
+ 
+    return currentItem + queueItems;
   }
-
+ 
+  // ── UPDATE PARCIAL (misma canción, solo datos) ────────────────────────────
+  function updatePlayerUI(data) {
+    // Play/pause button
+    const btnPlay = document.getElementById('btn-play');
+    if (btnPlay) btnPlay.textContent = isPlaying ? '⏸' : '▶';
+ 
+    // Album art animation
+    const art = document.getElementById('album-art');
+    if (art) {
+      if (isPlaying) art.classList.add('playing');
+      else art.classList.remove('playing');
+    }
+ 
+    // Volumen (solo si no está siendo tocado)
+    const volVal = document.getElementById('vol-val');
+    if (volVal) volVal.textContent = data.volume ?? 100;
+ 
+    // Cola (puede cambiar sin cambiar canción)
+    const queueList  = document.getElementById('queue-list');
+    const queueCount = document.getElementById('queue-count');
+    if (queueList && data.currentTrack) {
+      const thumb = data.currentTrack?.thumbnail || '';
+      queueList.innerHTML  = renderQueueHTML(data, data.currentTrack, thumb);
+    }
+    if (queueCount) queueCount.textContent = `${data.queueLength || 0} canciones`;
+  }
+ 
+  // ── PROGRESS LOOP (rAF, independiente del poll) ───────────────────────────
+  let progressRafId = null;
+ 
+  function startProgressLoop() {
+    if (progressRafId) cancelAnimationFrame(progressRafId);
+    function loop() {
+      const fill  = document.getElementById('progress-fill');
+      const label = document.getElementById('pos-label');
+      if (!fill || !label) { progressRafId = null; return; }
+ 
+      const pos = getInterpolatedPosition();
+      const pct = duration ? Math.min((pos / duration) * 100, 100) : 0;
+      fill.style.width  = pct + '%';
+      label.textContent = fmtTime(pos);
+ 
+      progressRafId = requestAnimationFrame(loop);
+    }
+    progressRafId = requestAnimationFrame(loop);
+  }
+ 
+  // ── CONTROLS ─────────────────────────────────────────────────────────────
   async function togglePlay() {
     await playerAction('pause');
   }
-
+ 
+  let volumeTimer = null;
+  function setVolume(val) {
+    document.getElementById('vol-val').textContent = val;
+    clearTimeout(volumeTimer);
+    volumeTimer = setTimeout(() => playerAction('volume', { volume: parseInt(val) }), 300);
+  }
+ 
+  function seekTo(e, bar) {
+    const rect = bar.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const pos  = Math.floor(pct * duration);
+    // Actualizar estado local inmediatamente para que el rAF lo refleje
+    serverPosition  = pos;
+    serverTimestamp = Date.now();
+    playerAction('seek', { position: pos });
+  }
+ 
   async function playerAction(action, body = {}) {
     try {
       await apiFetch(`/api/player/${currentGuildId}/${action}`, {
         method: 'POST',
         body: JSON.stringify(body)
       });
-      setTimeout(loadPlayer, 300);
+      setTimeout(loadPlayer, 400);
     } catch {}
   }
-
-  let volumeTimer = null;
-  function setVolume(val) {
-    document.getElementById('vol-val').textContent = val;
-    clearTimeout(volumeTimer);
-    volumeTimer = setTimeout(() => {
-      playerAction('volume', { volume: parseInt(val) });
-    }, 300);
-  }
-
-  function seekTo(e, bar) {
-    const rect = bar.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    position = Math.floor(pct * duration);
-    updateProgress();
-    playerAction('seek', { position: position });
-  }
-
+ 
+  // ── LYRICS ───────────────────────────────────────────────────────────────
   function parseLRC(lrc) {
     const lines = [];
     for (const line of lrc.split('\n')) {
       const match = line.match(/^\[(\d+):(\d+\.\d+)\](.*)/);
       if (!match) continue;
-
-      const min = parseInt(match[1]);
-      const sec = parseFloat(match[2]);
-      const time = (min * 60 + sec) * 1000;
+      const time = (parseInt(match[1]) * 60 + parseFloat(match[2])) * 1000;
       const text = match[3].trim();
-
       if (text) lines.push({ time, text });
     }
     return lines.sort((a, b) => a.time - b.time);
   }
-
-  async function loadLyrics(title, artist) {
-    const key = `${title}|||${artist}`.toLowerCase();
-    const main = document.getElementById('main-content');
-    const topContainer = document.getElementById('top-container');
-    const body = document.getElementById('lyrics-body');
-
-    if (!body) return;
-
-    // Si es la misma canción, verificamos si el contenedor se vació por el render
-    if (key === lyricsTrack) {
-      if (lyricsLines.length && (body.querySelector('.lyrics-loading') || !body.innerHTML.trim())) {
-        main.classList.add('has-lyrics');
-        if(topContainer) topContainer.style.maxWidth = "1300px";
-        document.getElementById('lyrics-source').textContent = 'sincronizadas';
-        renderSyncedLyrics();
-        // Forzamos al renderizador a marcar la línea actual en la que iba
-        currentLineIdx = -1; 
-        if (isPlaying) startLyricsTimer();
-      } else if (plainLyrics && (body.querySelector('.lyrics-loading') || !body.innerHTML.trim())) {
-        main.classList.add('has-lyrics');
-        if(topContainer) topContainer.style.maxWidth = "1300px";
-        document.getElementById('lyrics-source').textContent = 'sin sincronizar';
-        body.innerHTML = plainLyrics.split('\n').map(l => `<div class="lyric-line">${l}</div>`).join('');
-      }
-      return;
-    }
-
-    // Si es una canción nueva, limpiamos y buscamos en la API
-    lyricsTrack = key;
-    resetLyrics();
-
+ 
+  async function fetchLyrics(title, artist) {
+    const lyricsCard = document.getElementById('lyrics-card');
+    const lyricsBody = document.getElementById('lyrics-body');
+    if (!lyricsCard || !lyricsBody) return;
+ 
+    // Mostrar card con spinner
+    lyricsCard.style.display = '';
+    lyricsBody.innerHTML = `<div class="lyrics-loading"><div class="lyrics-spinner"></div> Buscando letras...</div>`;
+ 
     try {
-      const q = new URLSearchParams({ track_name: title, artist_name: artist });
+      const q   = new URLSearchParams({ track_name: title, artist_name: artist });
       const res = await fetch(`https://lrclib.net/api/get?${q}`);
-      if (!res.ok) throw new Error();
-
+      if (!res.ok) throw new Error('no lyrics');
+ 
       const data = await res.json();
-
+ 
+      // Verificar que la canción no cambió mientras esperábamos
+      const key = `${title}|||${artist}`.toLowerCase();
+      if (key !== lyricsTrackKey) return; // canción ya cambió, ignorar
+ 
       if (data.syncedLyrics) {
         lyricsLines = parseLRC(data.syncedLyrics);
+        lyricsReady = true;
         document.getElementById('lyrics-source').textContent = 'sincronizadas';
-        
-        main.classList.add('has-lyrics');
-        if(topContainer) topContainer.style.maxWidth = "1300px";
-
-        renderSyncedLyrics();
-        if (isPlaying) startLyricsTimer();
-      } 
-      else if (data.plainLyrics) {
+ 
+        lyricsBody.innerHTML = lyricsLines
+          .map((l, i) => `<div class="lyric-line" id="lyric-${i}">${esc(l.text)}</div>`)
+          .join('');
+ 
+        showLyricsColumn();
+        startLyricsLoop();
+ 
+      } else if (data.plainLyrics) {
         plainLyrics = data.plainLyrics;
         document.getElementById('lyrics-source').textContent = 'sin sincronizar';
-        
-        main.classList.add('has-lyrics');
-        if(topContainer) topContainer.style.maxWidth = "1300px";
-
-        body.innerHTML = plainLyrics.split('\n').map(l => `<div class="lyric-line">${l}</div>`).join('');
+ 
+        lyricsBody.innerHTML = data.plainLyrics
+          .split('\n')
+          .map(l => `<div class="lyric-line">${esc(l) || '&nbsp;'}</div>`)
+          .join('');
+ 
+        showLyricsColumn();
       } else {
-        throw new Error();
+        throw new Error('no lyrics');
       }
     } catch {
-      main.classList.remove('has-lyrics');
-      if(topContainer) topContainer.style.maxWidth = "1100px";
-      body.innerHTML = `
-        <div class="lyrics-empty">
-          <span style="font-size:2rem">🎵</span>
-          <span>No se encontraron letras</span>
-        </div>
-      `;
+      // Sin letras: ocultar columna
+      const lyricsCard = document.getElementById('lyrics-card');
+      if (lyricsCard) lyricsCard.style.display = 'none';
+      hideLyricsColumn();
     }
   }
-
-  function renderSyncedLyrics() {
-    const body = document.getElementById('lyrics-body');
-    if (!body) return;
-    body.innerHTML = lyricsLines.map((l, i) => `<div class="lyric-line" id="lyric-${i}">${l.text}</div>`).join('');
+ 
+  function showLyricsColumn() {
+    const main = document.getElementById('main-content');
+    const top  = document.getElementById('top-container');
+    if (main) main.classList.add('has-lyrics');
+    if (top)  top.classList.add('expanded');
+    const card = document.getElementById('lyrics-card');
+    if (card) card.style.display = '';
   }
-
-  function startLyricsTimer() {
-    if (lyricsTimer) cancelAnimationFrame(lyricsTimer);
-
-    function syncLyricsLoop() {
-      if (!lyricsLines.length || !isPlaying) return;
-
-      let newIdx = currentLineIdx;
-      for (let i = 0; i < lyricsLines.length; i++) {
-        if (position >= lyricsLines[i].time) {
-          newIdx = i;
+ 
+  function hideLyricsColumn() {
+    const main = document.getElementById('main-content');
+    const top  = document.getElementById('top-container');
+    if (main) main.classList.remove('has-lyrics');
+    if (top)  top.classList.remove('expanded');
+  }
+ 
+  // ── LYRICS SYNC LOOP (rAF, completamente separado del poll) ──────────────
+  function startLyricsLoop() {
+    stopLyricsLoop();
+    if (!lyricsLines.length) return;
+ 
+    function loop() {
+      if (!lyricsLines.length) return;
+ 
+      const pos = getInterpolatedPosition();
+ 
+      // Buscar la línea activa con búsqueda binaria para mayor precisión
+      let lo = 0, hi = lyricsLines.length - 1, newIdx = -1;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (lyricsLines[mid].time <= pos) {
+          newIdx = mid;
+          lo = mid + 1;
         } else {
-          break;
+          hi = mid - 1;
         }
       }
-
-      if (newIdx !== currentLineIdx && newIdx !== -1) {
+ 
+      if (newIdx !== currentLineIdx) {
         currentLineIdx = newIdx;
-        const linesElements = document.querySelectorAll('.lyric-line');
-        
-        linesElements.forEach((el, i) => {
-          el.className = 'lyric-line';
-          if (i < newIdx) {
-            el.classList.add('past');
-          } else if (i === newIdx) {
-            el.classList.add('active');
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
+ 
+        // Actualizar clases sin tocar innerHTML
+        const allLines = document.querySelectorAll('.lyric-line');
+        allLines.forEach((el, i) => {
+          if (i < newIdx)       { el.className = 'lyric-line past'; }
+          else if (i === newIdx){ el.className = 'lyric-line active'; }
+          else                  { el.className = 'lyric-line'; }
         });
+ 
+        // Scroll suave solo cuando cambia la línea
+        if (newIdx >= 0) {
+          const activeEl = document.getElementById(`lyric-${newIdx}`);
+          if (activeEl) {
+            activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
       }
-      lyricsTimer = requestAnimationFrame(syncLyricsLoop);
+ 
+      lyricsRafId = requestAnimationFrame(loop);
     }
-    lyricsTimer = requestAnimationFrame(syncLyricsLoop);
+ 
+    lyricsRafId = requestAnimationFrame(loop);
   }
-
-  function resetLyrics() {
-    if (lyricsTimer) {
-      cancelAnimationFrame(lyricsTimer);
-      lyricsTimer = null;
+ 
+  function stopLyricsLoop() {
+    if (lyricsRafId) {
+      cancelAnimationFrame(lyricsRafId);
+      lyricsRafId = null;
     }
-    lyricsLines = [];
-    plainLyrics = '';
+  }
+ 
+  function resetLyricsState() {
+    lyricsLines    = [];
+    plainLyrics    = '';
     currentLineIdx = -1;
+    lyricsReady    = false;
   }
-
+ 
+  // ── UTILS ─────────────────────────────────────────────────────────────────
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+ 
+  // ── INIT ──────────────────────────────────────────────────────────────────
   loadGuilds();
 </script>
 </body>
