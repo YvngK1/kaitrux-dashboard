@@ -363,7 +363,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ── ROUTING ESTÁTICO DE VISTAS ────────────────────────────────────────────────
-const PAGES = ['dashboard', 'server', 'status', 'commands', 'player', 'premium'];
+const PAGES = ['dashboard', 'server', 'status', 'commands', 'player', 'premium', 'shitpost'];
 PAGES.forEach(p => {
     app.get(`/${p}`, (req, res) => res.sendFile(path.join(__dirname, 'public', `${p}.html`)));
 });
