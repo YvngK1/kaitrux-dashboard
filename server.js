@@ -162,7 +162,21 @@ app.get('/api/auth/callback', async (req, res) => {
         res.redirect('/?error=auth_failed');
     }
 });
+// ── API — SHITPOST ────────────────────────────────────────────────────────────
+app.get('/api/shitpost/:guildId', authMiddleware, async (req, res) => {
+    const query = new URLSearchParams(req.query).toString();
+    const data  = await botFetch(`/shitpost/${req.params.guildId}${query ? '?' + query : ''}`);
+    if (!data) return res.status(503).json({ error: 'Bot no disponible.' });
+    res.json(data);
+});
 
+app.post('/api/shitpost/:guildId/:postId/star', authMiddleware, async (req, res) => {
+    const data = await botFetch(`/shitpost/${req.params.guildId}/${req.params.postId}/star`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body),
+    });
+    if (!data) return res.status(503).json({ error: 'Bot no disponible.' });
+    res.json(data);
+});
 // ── API — USUARIO Y GUILDS ─────────────────────────────────────────────────────
 app.get('/api/me', authMiddleware, (req, res) => res.json(req.user));
 
