@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <meta name="description" content="Kaitrux Bot un bot multifuncional para interacción y gestión simple del servidor. Mejora la experiencia y administración de tu comunidad">
+  <meta property="og:title" content="Kaitrux">
+  <meta property="og:description" content="Kaitrux Bot un bot multifuncional para interacción y gestión simple del servidor. Mejora la experiencia y administración de tu comunidad">
+  <meta property="og:image" content="https://kaitruxbot.xyz/icon.png">
+  <meta property="og:url" content="https://kaitruxbot.xyz">
+  <meta property="og:type" content="website">
+  <title>Shitpost — Kaitrux</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080810; --surface: #0f0f1a; --surface2: #141424; --surface3: #1a1a2e;
+      --border: rgba(255,255,255,0.07); --accent: #5865F2; --accent2: #eb459e;
+      --text: #e8e8f0; --muted: #6b6b8a; --glow: rgba(88,101,242,0.35);
+      --success: #57f287; --danger: #ed4245;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0; }
+
+    /* NAV */
+    nav { position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border); }
+    .logo { font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+    .back-btn { color:var(--muted);text-decoration:none;font-size:0.88rem;transition:color 0.2s;display:flex;align-items:center;gap:0.4rem; }
+    .back-btn:hover { color:var(--text); }
+
+    /* CONTAINER */
+    .container { position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:2rem; }
+
+    /* HEADER */
+    .page-header { margin-bottom:2rem; }
+    .page-title { font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:0.3rem; }
+    .page-sub { color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem; }
+
+    /* TOOLBAR */
+    .toolbar { display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:2rem; }
+    .server-select { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.6rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;cursor:pointer;min-width:200px; }
+    .server-select:focus { border-color:var(--accent); }
+    .server-select option { background:var(--surface2); }
+
+    .filter-group { display:flex;gap:0.5rem; }
+    .filter-btn { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 1rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s; }
+    .filter-btn:hover { color:var(--text);border-color:rgba(255,255,255,0.15); }
+    .filter-btn.active { background:rgba(88,101,242,0.15);border-color:var(--accent);color:var(--accent); }
+
+    .stats-bar { margin-left:auto;font-size:0.82rem;color:var(--muted); }
+
+    /* GALLERY GRID */
+    .gallery { display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:1.2rem; }
+
+    /* CARD */
+    .card { background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform 0.2s, border-color 0.2s;display:flex;flex-direction:column; }
+    .card:hover { transform:translateY(-3px);border-color:rgba(88,101,242,0.3); }
+
+    .card-media { position:relative;width:100%;aspect-ratio:1/1;background:var(--surface2);overflow:hidden;cursor:pointer; }
+    .card-media img { width:100%;height:100%;object-fit:cover;transition:transform 0.3s; }
+    .card-media:hover img { transform:scale(1.04); }
+    .card-media video { width:100%;height:100%;object-fit:cover; }
+    .type-badge { position:absolute;top:0.6rem;right:0.6rem;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);border-radius:6px;padding:0.2rem 0.5rem;font-size:0.7rem;color:var(--muted);border:1px solid var(--border); }
+    .type-badge.video { color:#eb459e; }
+
+    .card-body { padding:0.9rem 1rem;flex:1;display:flex;flex-direction:column;gap:0.6rem; }
+
+    .card-meta { display:flex;align-items:center;justify-content:space-between; }
+    .card-user { font-size:0.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%; }
+    .card-date { font-size:0.72rem;color:var(--muted);opacity:0.7; }
+
+    /* STARS */
+    .star-section { display:flex;align-items:center;justify-content:space-between; }
+    .stars { display:flex;gap:0.2rem; }
+    .star { font-size:1.2rem;cursor:pointer;transition:transform 0.15s, filter 0.15s;filter:grayscale(1) opacity(0.35); }
+    .star:hover, .star.hovered { filter:none;transform:scale(1.2); }
+    .star.filled { filter:none; }
+    .star.voted { cursor:default; }
+    .star.voted:hover { transform:none; }
+
+    .star-info { font-size:0.75rem;color:var(--muted);text-align:right; }
+    .star-avg { font-weight:600;color:var(--text); }
+
+    .voted-badge { font-size:0.72rem;color:var(--success);background:rgba(87,242,135,0.08);border:1px solid rgba(87,242,135,0.2);padding:0.15rem 0.5rem;border-radius:100px; }
+
+    /* LIGHTBOX */
+    .lightbox { position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s; }
+    .lightbox.open { opacity:1;pointer-events:all; }
+    .lightbox-inner { position:relative;max-width:90vw;max-height:90vh; }
+    .lightbox-inner img, .lightbox-inner video { max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain; }
+    .lightbox-close { position:absolute;top:-2rem;right:0;background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;transition:color 0.2s; }
+    .lightbox-close:hover { color:var(--text); }
+
+    /* EMPTY / LOADING */
+    .loading { display:flex;align-items:center;justify-content:center;gap:0.75rem;padding:4rem;color:var(--muted);grid-column:1/-1; }
+    .spinner { width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
+    .empty { grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:4rem;color:var(--muted);text-align:center; }
+    .empty-icon { font-size:3.5rem;opacity:0.3; }
+
+    /* PAGINATION */
+    .pagination { display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-top:2.5rem;flex-wrap:wrap; }
+    .page-btn { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.9rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;min-width:38px;text-align:center; }
+    .page-btn:hover { color:var(--text);border-color:rgba(255,255,255,0.15); }
+    .page-btn.active { background:rgba(88,101,242,0.15);border-color:var(--accent);color:var(--accent); }
+    .page-btn:disabled { opacity:0.3;cursor:not-allowed; }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    @media(max-width:600px) {
+      .gallery { grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));gap:0.75rem; }
+      .toolbar { gap:0.6rem; }
+      .stats-bar { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Kaitrux</div>
+    <a href="/dashboard.html" class="back-btn">← Dashboard</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <div class="page-title">💩 Shitpost</div>
+      <div class="page-sub">Los mejores memes de tu servidor. Votá con estrellas.</div>
+    </div>
+
+    <div class="toolbar">
+      <select class="server-select" id="guild-select" onchange="selectGuild(this.value)">
+        <option value="">Seleccioná un servidor...</option>
+      </select>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="setFilter('all', this)">Todo</button>
+        <button class="filter-btn" onclick="setFilter('foto', this)">📷 Fotos</button>
+        <button class="filter-btn" onclick="setFilter('video', this)">🎬 Videos</button>
+      </div>
+      <span class="stats-bar" id="stats-bar"></span>
+    </div>
+
+    <div class="gallery" id="gallery">
+      <div class="loading"><div class="spinner"></div> Cargando servidores...</div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <div class="lightbox-inner" id="lightbox-inner">
+      <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    </div>
+  </div>
+
+<script>
+  const API = '';
+  const SESSION_KEY = 'kaitrux_token';
+  const SESSION_EXP = 'kaitrux_token_exp';
+
+  function getToken() {
+    const exp = parseInt(localStorage.getItem(SESSION_EXP) || '0');
+    if (Date.now() > exp) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_EXP);
+      return null;
+    }
+    return localStorage.getItem(SESSION_KEY);
+  }
+
+  const token = getToken();
+  if (!token) location.href = '/';
+
+  // Sacar userId del JWT (sin verificar, solo para UI)
+  function getUserIdFromToken(tok) {
+    try {
+      const payload = JSON.parse(atob(tok.split('.')[1]));
+      return payload.userId || payload.id || payload.sub || null;
+    } catch { return null; }
+  }
+  const currentUserId = getUserIdFromToken(token);
+
+  // Votos locales guardados en sessionStorage para persistir sin recargar
+  function getVotedPosts() {
+    try { return JSON.parse(sessionStorage.getItem('kaitrux_voted') || '{}'); } catch { return {}; }
+  }
+  function markVoted(postId, stars) {
+    const v = getVotedPosts();
+    v[postId] = stars;
+    sessionStorage.setItem('kaitrux_voted', JSON.stringify(v));
+  }
+  function hasVoted(postId) {
+    return postId in getVotedPosts();
+  }
+
+  let currentGuildId = null;
+  let currentFilter  = 'all';
+  let currentPage    = 1;
+  let totalPages     = 1;
+
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(`${API}${path}`, {
+      ...opts,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...(opts.headers || {})
+      }
+    });
+    if (res.status === 401) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_EXP);
+      location.href = '/';
+    }
+    return res.json();
+  }
+
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)   return 'ahora';
+    if (m < 60)  return `hace ${m}m`;
+    const h = Math.floor(m / 60);
+    if (h < 24)  return `hace ${h}h`;
+    const d = Math.floor(h / 24);
+    if (d < 30)  return `hace ${d}d`;
+    return new Date(dateStr).toLocaleDateString('es');
+  }
+
+  // ── GUILDS ───────────────────────────────────────────────────────────────
+  async function loadGuilds() {
+    try {
+      const guilds = await apiFetch('/api/guilds');
+      const select = document.getElementById('guild-select');
+      const active = guilds.filter(g => g.hasBot);
+
+      active.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+      });
+
+      if (active.length === 1) {
+        select.value = active[0].id;
+        selectGuild(active[0].id);
+      } else {
+        document.getElementById('gallery').innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">💩</div>
+            <div>Seleccioná un servidor para ver los memes.</div>
+          </div>`;
+      }
+    } catch {
+      document.getElementById('gallery').innerHTML = `<div class="loading">Error al cargar servidores.</div>`;
+    }
+  }
+
+  function selectGuild(guildId) {
+    if (!guildId) return;
+    currentGuildId = guildId;
+    currentPage    = 1;
+    loadPosts();
+  }
+
+  function setFilter(type, btn) {
+    currentFilter = type;
+    currentPage   = 1;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (currentGuildId) loadPosts();
+  }
+
+  // ── LOAD POSTS ───────────────────────────────────────────────────────────
+  async function loadPosts() {
+    if (!currentGuildId) return;
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = `<div class="loading"><div class="spinner"></div> Cargando memes...</div>`;
+    document.getElementById('pagination').innerHTML = '';
+    document.getElementById('stats-bar').textContent = '';
+
+    try {
+      const data = await apiFetch(`/api/shitpost/${currentGuildId}?page=${currentPage}&type=${currentFilter}`);
+      totalPages = data.pages || 1;
+      renderGallery(data);
+      renderPagination(data);
+    } catch {
+      gallery.innerHTML = `<div class="empty"><div class="empty-icon">💩</div><div>Error al cargar los posts.</div></div>`;
+    }
+  }
+
+  // ── RENDER ───────────────────────────────────────────────────────────────
+  function renderGallery(data) {
+    const gallery = document.getElementById('gallery');
+    const voted   = getVotedPosts();
+
+    if (!data.posts || !data.posts.length) {
+      gallery.innerHTML = `<div class="empty"><div class="empty-icon">🦗</div><div>No hay memes aquí todavía.</div></div>`;
+      document.getElementById('stats-bar').textContent = '';
+      return;
+    }
+
+    document.getElementById('stats-bar').textContent = `${data.total} post${data.total !== 1 ? 's' : ''}`;
+
+    gallery.innerHTML = data.posts.map(post => {
+      const postId    = post._id;
+      const alreadyVoted = hasVoted(postId) || (currentUserId && post.votantes?.includes(currentUserId));
+      const avg       = post.totalVotos ? (post.stars / post.totalVotos).toFixed(1) : '—';
+      const isVideo   = post.type === 'video';
+
+      const mediaHTML = isVideo
+        ? `<video src="${esc(post.url)}" muted playsinline loop onclick="openLightbox('video','${esc(post.url)}')"></video>`
+        : `<img src="${esc(post.url)}" alt="shitpost" loading="lazy" onclick="openLightbox('foto','${esc(post.url)}')">`;
+
+      const starsHTML = [1,2,3,4,5].map(n => {
+        const filled = alreadyVoted && (voted[postId] || 0) >= n ? 'filled' : '';
+        const votedClass = alreadyVoted ? 'voted' : '';
+        return `<span class="star ${filled} ${votedClass}" data-n="${n}" data-post="${postId}"
+          ${alreadyVoted ? '' : `onmouseenter="hoverStars(this)" onmouseleave="unhoverStars(this)" onclick="voteStar(this)"`}>⭐</span>`;
+      }).join('');
+
+      return `
+        <div class="card" id="card-${postId}">
+          <div class="card-media">
+            ${mediaHTML}
+            <span class="type-badge${isVideo ? ' video' : ''}">${isVideo ? '🎬 video' : '📷 foto'}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-user" title="${esc(post.uploadedBy)}">👤 ${esc(post.uploadedBy)}</span>
+              <span class="card-date">${timeAgo(post.timestamp)}</span>
+            </div>
+            <div class="star-section">
+              <div class="stars" id="stars-${postId}">${starsHTML}</div>
+              <div class="star-info">
+                <div class="star-avg" id="avg-${postId}">${avg} ⭐</div>
+                <div id="votes-${postId}">${post.totalVotos} voto${post.totalVotos !== 1 ? 's' : ''}</div>
+                ${alreadyVoted ? `<div class="voted-badge">✓ votaste</div>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // Autoplay videos cuando entran al viewport
+    const videos = gallery.querySelectorAll('video');
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { e.isIntersecting ? e.target.play() : e.target.pause(); });
+      }, { threshold: 0.3 });
+      videos.forEach(v => obs.observe(v));
+    }
+  }
+
+  // ── STARS HOVER ──────────────────────────────────────────────────────────
+  function hoverStars(el) {
+    const n      = parseInt(el.dataset.n);
+    const postId = el.dataset.post;
+    document.querySelectorAll(`#stars-${postId} .star`).forEach((s, i) => {
+      if (i < n) s.classList.add('hovered'); else s.classList.remove('hovered');
+    });
+  }
+
+  function unhoverStars(el) {
+    const postId = el.dataset.post;
+    document.querySelectorAll(`#stars-${postId} .star`).forEach(s => s.classList.remove('hovered'));
+  }
+
+  // ── VOTE ─────────────────────────────────────────────────────────────────
+  async function voteStar(el) {
+    const stars  = parseInt(el.dataset.n);
+    const postId = el.dataset.post;
+
+    if (hasVoted(postId)) return;
+    if (!currentUserId) { alert('No se pudo obtener tu usuario.'); return; }
+
+    // Optimistic UI: marcar inmediatamente
+    markVoted(postId, stars);
+    const starsEl = document.querySelectorAll(`#stars-${postId} .star`);
+    starsEl.forEach((s, i) => {
+      s.classList.toggle('filled', i < stars);
+      s.classList.add('voted');
+      s.onmouseenter = null;
+      s.onmouseleave = null;
+      s.onclick      = null;
+    });
+
+    try {
+      const res = await apiFetch(`/api/shitpost/${currentGuildId}/${postId}/star`, {
+        method: 'POST',
+        body: JSON.stringify({ userId: currentUserId, stars })
+      });
+
+      if (res.success) {
+        document.getElementById(`avg-${postId}`).textContent   = `${res.promedio} ⭐`;
+        document.getElementById(`votes-${postId}`).textContent = `${res.totalVotos} voto${res.totalVotos !== 1 ? 's' : ''}`;
+        // Agregar badge
+        const starInfo = document.querySelector(`#card-${postId} .star-info`);
+        if (starInfo && !starInfo.querySelector('.voted-badge')) {
+          starInfo.insertAdjacentHTML('beforeend', `<div class="voted-badge">✓ votaste</div>`);
+        }
+      }
+    } catch {
+      // Si falla, ya el estado local quedó guardado igual
+    }
+  }
+
+  // ── LIGHTBOX ─────────────────────────────────────────────────────────────
+  function openLightbox(type, url) {
+    const inner = document.getElementById('lightbox-inner');
+    const media = type === 'video'
+      ? `<video src="${esc(url)}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:12px"></video>`
+      : `<img src="${esc(url)}" style="max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain">`;
+
+    inner.innerHTML = `<button class="lightbox-close" onclick="closeLightbox()">✕</button>${media}`;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(e) {
+    if (e && e.target !== document.getElementById('lightbox')) return;
+    const lb = document.getElementById('lightbox');
+    lb.classList.remove('open');
+    lb.querySelector('video')?.pause();
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  // ── PAGINATION ───────────────────────────────────────────────────────────
+  function renderPagination(data) {
+    const pag = document.getElementById('pagination');
+    if (data.pages <= 1) { pag.innerHTML = ''; return; }
+
+    let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>‹</button>`;
+
+    for (let i = 1; i <= data.pages; i++) {
+      if (data.pages > 7 && Math.abs(i - currentPage) > 2 && i !== 1 && i !== data.pages) {
+        if (i === 2 || i === data.pages - 1) html += `<span style="color:var(--muted);padding:0 0.3rem">…</span>`;
+        continue;
+      }
+      html += `<button class="page-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+    }
+
+    html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= data.pages ? 'disabled' : ''}>›</button>`;
+    pag.innerHTML = html;
+  }
+
+  function goPage(p) {
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    loadPosts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── INIT ─────────────────────────────────────────────────────────────────
+  loadGuilds();
+</script>
+</body>
+</html>
